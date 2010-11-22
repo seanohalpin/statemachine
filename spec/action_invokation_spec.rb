@@ -1,16 +1,23 @@
-require File.dirname(__FILE__) + '/spec_helper'
+#require File.dirname(__FILE__) + '/spec_helper'
+require 'statemachine'
+require 'lib/statemachine/action_invokation.rb'
 
 class Noodle
   
-  attr_accessor :shape, :cooked
+  attr_accessor :shape, :cooked, :tasty
   
   def initialize
     @shape = "farfalla"
     @cooked = false
+    @tasty = false
   end
   
   def cook
     @cooked = true
+  end
+
+  def good
+    @tasty = true
   end
   
   def transform(shape)
@@ -27,7 +34,7 @@ describe "Action Invokation" do
   
   it "Proc actions" do
     sm = Statemachine.build do |smb|
-      smb.trans :cold, :fire, :hot, Proc.new { @cooked = true } 
+      smb.trans :cold, :fire, :hot, Proc.new { @cooked = true }
     end
     
     sm.context = @noodle
@@ -62,5 +69,56 @@ describe "Action Invokation" do
     @noodle.shape.should eql("fettucini")
     @noodle.cooked.should equal(true)
   end
+
+  it "Multiple Proc actions" do
+    sm = Statemachine.build do |smb|
+      smb.trans :cold, :fire, :hot, [Proc.new { @cooked = true }, Proc.new { @tasty = true }]
+    end
+
+    sm.context = @noodle
+    sm.fire
+
+    @noodle.cooked.should equal(true)
+    @noodle.tasty.should equal(true)
+  end
+
+  it "Multiple Symbol actions" do
+    sm = Statemachine.build do |smb|
+      smb.trans :cold, :fire, :hot, [:cook, :good]
+    end
+
+    sm.context = @noodle
+    sm.fire
+
+    @noodle.cooked.should equal(true)
+    @noodle.tasty.should equal(true)
+  end
+
+  it "Multiple actions" do
+    sm = Statemachine.build do |smb|
+      smb.trans :cold, :fire, :hot, [:cook, Proc.new { @tasty = true }, "@shape = 'fettucini'"]
+    end
+
+    sm.context = @noodle
+    sm.fire
+
+    @noodle.cooked.should equal(true)
+    @noodle.tasty.should equal(true)
+    @noodle.shape.should eql("fettucini")
+  end
+
+  it "No actions" do
+    sm = Statemachine.build do |smb|
+      smb.trans :cold, :fire, :hot
+    end
+
+    sm.context = @noodle
+    sm.fire
+
+    @noodle.cooked.should == false
+    @noodle.tasty.should == false
+    @noodle.shape.should =="farfalla"
+  end
+
 
 end
