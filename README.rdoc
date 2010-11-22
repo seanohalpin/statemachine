@@ -9,16 +9,16 @@ of full-features Finite Statemachines that has been originally developed by Mica
 To get started, please look at the documentation on the  Statemachine website: 
 http://slagyr.github.com/statemachine
 
- == Changes 
+== Changes 
 
 === Multiple actions
 
 Instead of a single action, multiple actions can be defined for a transition by using an
 array.
 
-sm = Statemachine.build do |smb|
+  sm = Statemachine.build do |smb|
     smb.trans :cold, :fire, :hot, [:cook, Proc.new { @tasty = true }, "@shape = 'fettucini'"]
- end
+  end
 
 === Redefinition of states without loosing transitions
 
@@ -27,7 +27,7 @@ new statemachine a state with a superstate without loosing the original transiti
 
 In this example the state :unlocked of @old_sm gets replaced by a super state.
 
-@sm = Statemachine.build @old_sm do
+  @sm = Statemachine.build @old_sm do
      superstate :unlocked do
        trans :u1, :u, :u2
        trans :u2, :e, :maintenance
