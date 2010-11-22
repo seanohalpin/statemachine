@@ -3,13 +3,18 @@ module Statemachine
   module ActionInvokation #:nodoc:
     
     def invoke_action(action, args, message)
-      if action.is_a? Symbol
-        invoke_method(action, args, message)
-      elsif action.is_a? Proc
-        invoke_proc(action, args, message)
-      else
-        invoke_string(action)
+      if !(action.is_a? Array)
+        action = [action]
       end
+      action.each {|a|
+        if a.is_a? Symbol
+          invoke_method(a, args, message)
+        elsif a.is_a? Proc
+          invoke_proc(a, args, message)
+        else
+          invoke_string(a)
+        end
+       }
     end
     
     private
