@@ -36,5 +36,20 @@ describe "Turn Stile" do
     @locked.should equal(false)
     @out_of_order.should equal(true)
   end
-  
+
+  it "states could be redefined as superstates" do
+    @sm = Statemachine.build @sm do
+      superstate :unlocked do
+        trans :u1, :u, :u2
+        trans :u2, :e, :maintenance
+      end
+    end   
+
+    @sm.coin
+    @sm.state.should equal(:u1)
+    @sm.u
+    @sm.state.should equal(:u2)
+    @sm.coin
+    @sm.state.should equal(:locked)
+  end
 end
