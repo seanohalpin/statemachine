@@ -1,26 +1,51 @@
-= Statemachine Gem
+= MINT Statemachine Gem extensions
 
-This Ruby Library enables simple creation of full-features Finite Statemachines. 
- 
-== API
+This branch contains extensions that we implemented as part of the MINT project
+to run multimodal applications.
 
-Where to start:
+It is based on the great Statemachine  Ruby Library, which enables simple creation 
+of full-features Finite Statemachines that has been originally developed by Micah Martin.
 
-* Statemachine.build
-* Statemachine::SuperstateBuilding
-* Statemachine::StateBuilding
-* Statemachine::Statemachine
-	
-== Documentation
+To get started, please look at the documentation on the  Statemachine website: 
+http://slagyr.github.com/statemachine
 
-Some documentation is available here in this RDOC documentation.  
-You may also find useful documentation on the Statemachine website: http://slagyr.github.com/statemachine
+ == Changes 
 
-A detailed tutorial and overview of Finite State Machines and this library can be found
-at http://blog.8thlight.com/articles/2006/11/17/understanding-statemachines-part-1-states-and-transitions.
+=== Multiple actions
+
+Instead of a single action, multiple actions can be defined for a transition by using an
+array.
+
+sm = Statemachine.build do |smb|
+    smb.trans :cold, :fire, :hot, [:cook, Proc.new { @tasty = true }, "@shape = 'fettucini'"]
+ end
+
+=== Redefinition of states without loosing transitions
+
+In a statemachine definition you can pass another statemachine and replace for the
+new statemachine a state with a superstate without loosing the original transitions.
+
+In this example the state :unlocked of @old_sm gets replaced by a super state.
+
+@sm = Statemachine.build @old_sm do
+     superstate :unlocked do
+       trans :u1, :u, :u2
+       trans :u2, :e, :maintenance
+     end
+  end   
+
+=== Support for GemBundler
+
+rake make_spec can be used to create a gemspec file that is required for GemBundler
+integration. 
+
+== Project website
+
+http://www.multi-access.de
 	
 == License
 
+Copyright (C) 2010 Sebastian Feuerstack
 Copyright (C) 2006-2010  Micah Martin
 
 This library is free software; you can redistribute it and/or
