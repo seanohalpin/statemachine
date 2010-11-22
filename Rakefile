@@ -68,6 +68,13 @@ def egrep(pattern)
   end
 end
 
+desc "create a gemspec file"
+task :make_spec do
+  File.open("#{PKG_NAME}.gemspec", "w") do |file|
+    file.puts spec.to_ruby
+  end
+end
+
 desc "Look for TODO and FIXME tags in the code"
 task :todo do
   egrep /(FIXME|TODO|TBD)/
