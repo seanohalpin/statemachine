@@ -2,7 +2,7 @@ module Statemachine
 
   module ActionInvokation #:nodoc:
     
-    def invoke_action(action, args, message)
+    def invoke_action(action, args, message, messenger)
       if !(action.is_a? Array)
         action = [action]
       end
@@ -12,12 +12,17 @@ module Statemachine
         elsif a.is_a? Proc
           invoke_proc(a, args, message)
         else
-          invoke_string(a)
+          log("#{a}")
+          invoke_string(a) if not messenger
         end
        }
     end
     
     private
+
+    def log(message)
+      @messenger.puts message if @messenger
+    end
     
     def invoke_method(symbol, args, message)
       method = @context.method(symbol)

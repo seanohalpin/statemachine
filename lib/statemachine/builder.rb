@@ -1,16 +1,16 @@
 module Statemachine
 
-  # The starting point for building instances of Statemachine.  
-  # The block passed in should contain all the declarations for all 
+  # The starting point for building instances of Statemachine.
+  # The block passed in should contain all the declarations for all
   # states, events, and actions with in the statemachine.
-  # 
+  #
   # Sample: Turnstyle
-  # 
+  #
   #   sm = Statemachine.build do
   #     trans :locked, :coin, :unlocked, :unlock
   #     trans :unlocked, :pass, :locked, :lock
   #   end
-  #   
+  #
   # An optional statemachine paramter may be passed in to modify
   # an existing statemachine instance.
   #
@@ -32,11 +32,11 @@ module Statemachine
 
   class Builder #:nodoc:
     attr_reader :statemachine
-    
+
     def initialize(statemachine)
       @statemachine = statemachine
     end
-    
+
     protected
     def acquire_state_in(state_id, context)
       return nil if state_id == nil
@@ -56,28 +56,28 @@ module Statemachine
   # The builder module used to declare states.
   module StateBuilding
     attr_reader :subject
-  
+
     # Declares that the state responds to the spcified event.
     # The +event+ paramter should be a Symbol.  
-    # The +destination_id+, which should also be a Symbol, is the id of the state 
+    # The +destination_id+, which should also be a Symbol, is the id of the state
     # that will event will transition into.
-    # 
+    #
     # The 3rd +action+ paramter is optional
-    #   
+    #
     #   sm = Statemachine.build do
     #     state :locked do
     #       event :coin, :unlocked, :unlock
     #     end
     #   end
-    #   
+    #
     def event(event, destination_id, action = nil)
       @subject.add(Transition.new(@subject.id, destination_id, event, action))
     end
-    
+
     def on_event(event, options)
       self.event(event, options[:transition_to], options[:and_perform])
     end
-    
+
     # Declare the entry action for the state.
     #
     #   sm = Statemachine.build do
@@ -101,7 +101,7 @@ module Statemachine
     def on_exit(exit_action)
       @subject.exit_action = exit_action
     end
-    
+
     # Declare a default transition for the state.  Any event that is not already handled
     # by the state will be handled by this transition.
     #
@@ -110,18 +110,19 @@ module Statemachine
     #       default :unlock, :action
     #     end
     #   end
-    #    
+    #
     def default(destination_id, action = nil)
       @subject.default_transition = Transition.new(@subject.id, destination_id, nil, action)
     end
+
   end
-  
+
   # The builder module used to declare superstates.
   module SuperstateBuilding
     attr_reader :subject
-   
+
     # Define a state within the statemachine or superstate.
-    # 
+    #
     #   sm = Statemachine.build do
     #     state :locked do
     #       #define the state
@@ -132,9 +133,9 @@ module Statemachine
       builder = StateBuilder.new(id, @subject, @statemachine)
       builder.instance_eval(&block) if block
     end
-    
+
     # Define a superstate within the statemachine or superstate.
-    # 
+    #
     #   sm = Statemachine.build do
     #     superstate :operational do
     #       #define superstate
@@ -145,17 +146,17 @@ module Statemachine
       builder = SuperstateBuilder.new(id, @subject, @statemachine)
       builder.instance_eval(&block)
     end
-    
-    # Declares a transition within the superstate or statemachine.  
-    # The +origin_id+, a Symbol, identifies the starting state for this transition.  The state 
+
+    # Declares a transition within the superstate or statemachine.
+    # The +origin_id+, a Symbol, identifies the starting state for this transition.  The state
     # identified by +origin_id+ will be created within the statemachine or superstate which this
-    # transition is declared.   
-    # The +event+ paramter should be a Symbol.  
-    # The +destination_id+, which should also be a Symbol, is the id of the state that will 
-    # event will transition into.  This method will not create destination states within the 
+    # transition is declared.
+    # The +event+ paramter should be a Symbol.
+    # The +destination_id+, which should also be a Symbol, is the id of the state that will
+    # event will transition into.  This method will not create destination states within the
     # current statemachine of superstate.  If the state destination state should exist here,
     # that declare with with the +state+ method or declare a transition starting at the state.
-    # 
+    #
     #   sm = Statemachine.build do
     #     trans :locked, :coin, :unlocked, :unlock
     #   end
@@ -168,10 +169,10 @@ module Statemachine
     def transition_from(origin_id, options)
       trans(origin_id, options[:on_event], options[:transition_to], options[:and_perform])
     end
-    
-    # Specifies the startstate for the statemachine or superstate.  The state must 
+
+    # Specifies the startstate for the statemachine or superstate.  The state must
     # exist within the scope.
-    # 
+    #
     # sm = Statemachine.build do
     #   startstate :locked
     # end
@@ -179,10 +180,10 @@ module Statemachine
     def startstate(startstate_id)
       @subject.startstate_id = startstate_id
     end
-    
+
     # Allows the declaration of entry actions without using the +state+ method.  +id+ is identifies
     # the state to which the entry action will be added.
-    # 
+    #
     #   sm = Statemachine.build do
     #     trans :locked, :coin, :unlocked
     #     on_entry_of :unlocked, :unlock
@@ -191,10 +192,10 @@ module Statemachine
     def on_entry_of(id, action)
       @statemachine.get_state(id).entry_action = action
     end
-    
+
     # Allows the declaration of exit actions without using the +state+ method.  +id+ is identifies
     # the state to which the exit action will be added.
-    # 
+    #
     #   sm = Statemachine.build do
     #     trans :locked, :coin, :unlocked
     #     on_exit_of :locked, :unlock
@@ -203,9 +204,9 @@ module Statemachine
     def on_exit_of(id, action)
       @statemachine.get_state(id).exit_action = action
     end
-    
-    # Used to specify the default state held by the history pseudo state of the superstate.  
-    # 
+
+    # Used to specify the default state held by the history pseudo state of the superstate.
+    #
     #   sm = Statemachine.build do
     #     superstate :operational do
     #       default_history :state_id
@@ -216,22 +217,22 @@ module Statemachine
       @subject.default_history = id
     end
   end
-  
+
   # Builder class used to define states. Creates by SuperstateBuilding#state
   class StateBuilder < Builder
     include StateBuilding
-    
+
     def initialize(id, superstate, statemachine)
       super statemachine
       @subject = acquire_state_in(id, superstate)
     end
   end
-  
+
   # Builder class used to define superstates. Creates by SuperstateBuilding#superstate
   class SuperstateBuilder < Builder
     include StateBuilding
     include SuperstateBuilding
-    
+
     def initialize(id, superstate, statemachine)
       super statemachine
       @subject = Superstate.new(id, superstate, statemachine)
@@ -250,18 +251,19 @@ module Statemachine
       statemachine.add_state(@subject)
     end
   end
-  
+
   # Created by Statemachine.build as the root context for building the statemachine.
   class StatemachineBuilder < Builder
     include SuperstateBuilding
-    
-    def initialize(statemachine = Statemachine.new)
+
+    def initialize(messenger = nil, statemachine = nil)
+      statemachine = Statemachine.new(messenger)
       super statemachine
       @subject = @statemachine.root
     end
-    
+
     # Used the set the context of the statemahine within the builder.
-    # 
+    #
     #   sm = Statemachine.build do
     #     ...
     #     context MyContext.new
@@ -287,5 +289,5 @@ module Statemachine
       context StubContext.new(options)
     end
   end
-  
+
 end

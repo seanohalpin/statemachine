@@ -16,8 +16,9 @@ module Statemachine
       destination = statemachine.get_state(@destination_id)
       exits, entries = exits_and_entries(origin, destination)
       exits.each { |exited_state| exited_state.exit(args) }
+      messenger = origin.statemachine.messenger
       
-      origin.statemachine.invoke_action(@action, args, "transition action from #{origin} invoked by '#{@event}' event") if @action
+      origin.statemachine.invoke_action(@action, args, "transition action from #{origin} invoked by '#{@event}' event", messenger) if @action
       
       terminal_state = entries.last
       terminal_state.activate if terminal_state

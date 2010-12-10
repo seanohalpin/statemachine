@@ -40,14 +40,16 @@ module Statemachine
     end
     
     def exit(args)
+      messenger = self.statemachine.messenger
       @statemachine.trace("\texiting #{self}")
-      @statemachine.invoke_action(@exit_action, args, "exit action for #{self}") if @exit_action
+      @statemachine.invoke_action(@exit_action, args, "exit action for #{self}", messenger) if @exit_action
       @superstate.substate_exiting(self) if @superstate
     end
 
     def enter(args=[])
+      messenger = self.statemachine.messenger
       @statemachine.trace("\tentering #{self}")
-      @statemachine.invoke_action(@entry_action, args, "entry action for #{self}") if @entry_action
+      @statemachine.invoke_action(@entry_action, args, "entry action for #{self}", messenger) if @entry_action
     end
     
     def activate
