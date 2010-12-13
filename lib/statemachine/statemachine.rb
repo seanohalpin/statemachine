@@ -150,6 +150,17 @@ module Statemachine
       end
     end
 
+    def is_in_state?(id)
+      # check if it is the actual state
+      return true if state() == id  
+      
+      # check if this state exists
+      return false if not @states.has_key?(id)
+      
+      return @state.has_superstate(id)
+    end
+    
+
     private
 
     def is_history_state_id?(id)

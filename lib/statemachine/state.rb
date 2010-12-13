@@ -71,6 +71,12 @@ module Statemachine
       return "'#{id}' state"
     end
 
+    def has_superstate(id)
+      return false if not @superstate
+      return true if @superstate.id == id 
+      return @superstate.has_superstate(id)
+    end
+
   end
   
 end
