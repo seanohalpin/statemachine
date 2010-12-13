@@ -75,8 +75,8 @@ module Statemachine
     attr_reader :subject
   
     # Declares that the state responds to the spcified event.
-    # The +event+ paramter should be a Symbol.  
-    # The +destination_id+, which should also be a Symbol, is the id of the state 
+    # The +event+ paramter should be a Symbol.
+    # The +destination_id+, which should also be a Symbol, is the id of the state
     # that will event will transition into.
     # 
     # The 3rd +action+ paramter is optional
@@ -254,7 +254,7 @@ module Statemachine
       @subject = Superstate.new(id, superstate, statemachine)
       superstate.startstate_id = id if superstate.startstate_id == nil
 
-       # small patch to support redefinition of already existing states without
+      # small patch to support redefinition of already existing states without
       # loosing the already existing transformations. Used to overwrite states
       # with superstates.
 
