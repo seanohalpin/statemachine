@@ -58,7 +58,7 @@ module Statemachine
     attr_reader :subject
 
     # Declares that the state responds to the spcified event.
-    # The +event+ paramter should be a Symbol.  
+    # The +event+ paramter should be a Symbol.
     # The +destination_id+, which should also be a Symbol, is the id of the state
     # that will event will transition into.
     #
@@ -238,7 +238,7 @@ module Statemachine
       @subject = Superstate.new(id, superstate, statemachine)
       superstate.startstate_id = id if superstate.startstate_id == nil
 
-       # small patch to support redefinition of already existing states without
+      # small patch to support redefinition of already existing states without
       # loosing the already existing transformations. Used to overwrite states
       # with superstates.
 
@@ -252,12 +252,12 @@ module Statemachine
     end
   end
 
+
   # Created by Statemachine.build as the root context for building the statemachine.
   class StatemachineBuilder < Builder
     include SuperstateBuilding
 
-    def initialize(messenger = nil, statemachine = nil)
-      statemachine = Statemachine.new(messenger)
+    def initialize(statemachine = Statemachine.new)
       super statemachine
       @subject = @statemachine.root
     end

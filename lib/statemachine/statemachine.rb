@@ -34,12 +34,11 @@ module Statemachine
     attr_accessor :context
 
     attr_reader :root #:nodoc:
-    attr_accessor :messenger
+    attr_accessor :messenger, :message_queue
 
     # Should not be called directly.  Instances of Statemachine::Statemachine are created
     # through the Statemachine.build method.
-    def initialize(messenger = nil, root = Superstate.new(:root, nil, self))
-      @messenger = messenger
+    def initialize(root = Superstate.new(:root, nil, self))
       @root = root
       @states = {}
     end
