@@ -18,7 +18,7 @@ module Statemachine
   #   sm.state
   #
   # This class will accept any method that corresponds to an event.  If the
-  # current state respons to the event, the appropriate transtion will be invoked.
+  # current state responds to the event, the appropriate transition will be invoked.
   # Otherwise an exception will be raised.
   class Statemachine
     include ActionInvokation
@@ -34,10 +34,12 @@ module Statemachine
     attr_accessor :context
 
     attr_reader :root #:nodoc:
+    attr_accessor :messenger
 
     # Should not be called directly.  Instances of Statemachine::Statemachine are created
     # through the Statemachine.build method.
-    def initialize(root = Superstate.new(:root, nil, self))
+    def initialize(messenger = nil, root = Superstate.new(:root, nil, self))
+      @messenger = messenger
       @root = root
       @states = {}
     end
