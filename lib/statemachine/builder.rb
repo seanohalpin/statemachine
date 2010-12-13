@@ -30,6 +30,13 @@ module Statemachine
     return builder.statemachine
   end
 
+  def self.parallel_build(statemachine = nil, &block)
+    builder = statemachine ? ParallelStatemachineBuilder.new(statemachine) : ParallelStatemachineBuilder.new
+    builder.instance_eval(&block)
+    builder.parallel_statemachine
+  end
+
+
   class Builder #:nodoc:
     attr_reader :statemachine
     
@@ -52,6 +59,16 @@ module Statemachine
       return state
     end
   end
+
+  class ParallelBuilder
+    attr_reader :parallel_statemachine
+
+    def initialize(statemachines)
+      @parallel_statemachine = ParallelStatemachine.new statemachines
+    end
+    
+  end
+
 
   # The builder module used to declare states.
   module StateBuilding
@@ -261,6 +278,57 @@ module Statemachine
     end
     
     # Used the set the context of the statemahine within the builder.
+    # 
+    #   sm = Statemachine.build do
+    #     ...
+    #     context MyContext.new
+    #   end
+    #
+    # Statemachine.context may also be used.
+    def context(a_context)
+      @statemachine.context = a_context
+      a_context.statemachine = @statemachine if a_context.respond_to?(:statemachine=)
+    end
+
+    # Stubs the context.  This makes statemachine immediately useable, even if functionless.
+    # The stub will print all the actions called so it's nice for trial runs.
+    #
+    #   sm = Statemachine.build do
+    #     ...
+    #     stub_context :verbose => true
+    #   end
+    #
+    # Statemachine.context may also be used.
+    def stub_context(options={})
+      require 'statemachine/stub_context'
+      context StubContext.new(options)
+    end
+  end
+
+ 
+  # The builder module used to declare statemachines.
+  module StatemachineBuilding
+    attr_reader :subject
+   
+    def statemachine (id, &block)
+      builder = StatemachineBuilder.new
+      builder.instance_eval(&block) if block
+      builder.statemachine.reset
+      # puts "build statemachine #{builder.statemachine.inspect}"
+      @parallel_statemachine.add builder.statemachine
+    end
+  end
+
+  # Created by Statemachine.build as the root context for building the statemachine.
+  class ParallelStatemachineBuilder < ParallelBuilder
+    include StatemachineBuilding
+    
+    def initialize
+      super []
+      #@subject = @statemachine
+    end
+    
+    # used the set the context of the statemahine within the builder.
     # 
     #   sm = Statemachine.build do
     #     ...
