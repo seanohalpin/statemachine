@@ -30,13 +30,6 @@ module Statemachine
     return builder.statemachine
   end
 
-  def self.parallel_build(statemachine = nil, &block)
-    builder = statemachine ? ParallelStatemachineBuilder.new(statemachine) : ParallelStatemachineBuilder.new
-    builder.instance_eval(&block)
-    builder.parallel_statemachine
-  end
-
-
   class Builder #:nodoc:
     attr_reader :statemachine
     
@@ -267,11 +260,22 @@ module Statemachine
       statemachine.add_state(@subject)
     end
   end
+
+  module ParallelstateBuilding
+    attr_reader :subject
+    
+    def parallel (id, &block)
+      builder = ParallelStateBuilder.new(id, @subject, @statemachine)
+      builder.instance_eval(&block)
+    end
+  end
+
   
   # Created by Statemachine.build as the root context for building the statemachine.
   class StatemachineBuilder < Builder
     include SuperstateBuilding
-    
+    include ParallelstateBuilding
+ 
     def initialize(statemachine = Statemachine.new)
       super statemachine
       @subject = @statemachine.root
@@ -315,7 +319,20 @@ module Statemachine
       builder.instance_eval(&block) if block
       builder.statemachine.reset
       # puts "build statemachine #{builder.statemachine.inspect}"
-      @parallel_statemachine.add builder.statemachine
+      
+      @subject.add_statemachine builder.statemachine
+    end
+  end
+
+  class  ParallelStateBuilder < Builder
+    include StatemachineBuilding
+    def initialize(id, superstate, statemachine)
+      super statemachine
+      @subject = Parallelstate.new(id, superstate, statemachine)
+      superstate.startstate_id = id if superstate.startstate_id == nil
+
+      statemachine.add_state(@subject)
+      #puts "added #{@subject.inspect}"
     end
   end
 

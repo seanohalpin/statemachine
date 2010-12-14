@@ -33,8 +33,8 @@ module Statemachine
     # is responsible for all the behavior.
     attr_accessor :context
 
-    attr_reader :root #:nodoc:
-    attr_accessor :messenger, :message_queue
+    attr_reader :root
+    attr_accessor :messenger, :message_queue, :is_parallel #:nodoc:
 
     # Should not be called directly.  Instances of Statemachine::Statemachine are created
     # through the Statemachine.build method.
@@ -63,6 +63,15 @@ module Statemachine
     # Return the id of the current state of the statemachine.
     def state
       return @state.id
+    end
+
+    # returns an array with the ids of the current active states of the machine.
+    def states(atomic = true)
+      if @state.is_a? Parallelstate
+        return @state.states
+      else
+        return [@state.id]
+      end
     end
 
     # You may change the state of the statemachine by using this method.  The parameter should be
@@ -109,6 +118,8 @@ module Statemachine
         superstate = @states[superstate_id]
         raise StatemachineException.new("No history exists for #{superstate} since it is not a super state.") if superstate.concrete?
         return load_history(superstate)
+      elsif @is_parallel and @is_parallel.has_state(id)
+        @is_parallel.get_state(id)
       else
         state = State.new(id, @root, self)
         @states[id] = state
@@ -135,23 +146,29 @@ module Statemachine
     end
 
     def method_missing(message, *args) #:nodoc:
-      if @state and @state.transition_for(message)
-        process_event(message.to_sym, *args)
-        # method = self.method(:process_event)
-        # params = [message.to_sym].concat(args)
-        # method.call(*params)
-      else
-        begin
-          super(message, args)
-        rescue NoMethodError
-          process_event(message.to_sym, *args)
+      if @state
+        if @state.is_a? Parallelstate
+          @state.process_event(message.to_sym, *args)
+        else
+          if @state.transition_for(message)
+            process_event(message.to_sym, *args)
+            # method = self.method(:process_event)
+            # params = [message.to_sym].concat(args)
+            # method.call(*params)
+          else
+            begin
+              super(message, args)
+            rescue NoMethodError
+              process_event(message.to_sym, *args)
+            end
+          end
         end
       end
     end
 
     def is_in_state?(id)
       # check if it is the actual state
-      return true if state() == id  
+      return true if states().index id
       
       # check if this state exists
       return false if not @states.has_key?(id)

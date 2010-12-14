@@ -2,8 +2,8 @@ module Statemachine
 
   class State #:nodoc:
 
-    attr_reader :id, :statemachine, :superstate
-    attr_accessor :entry_action, :exit_action
+    attr_reader :id, :statemachine
+    attr_accessor :entry_action, :exit_action, :superstate
     attr_writer :default_transition
 
     def initialize(id, superstate, state_machine)
@@ -23,7 +23,10 @@ module Statemachine
 
     def non_default_transition_for(event)
       transition = @transitions[event]
-      transition = @superstate.non_default_transition_for(event) if @superstate and not transition
+      if @superstate
+       # p "checking superstate: #{@superstate.id}"
+        transition = @superstate.non_default_transition_for(event) if @superstate and not transition
+      end
       return transition
     end
 
