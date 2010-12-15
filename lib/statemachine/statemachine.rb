@@ -95,11 +95,15 @@ module Statemachine
       event = event.to_sym
       trace "Event: #{event}"
       if @state
-        transition = @state.transition_for(event)
-        if transition
-          transition.invoke(@state, self, args)
+        if @state.is_a? Parallelstate
+          @state.process_event(event, *args)
         else
-          raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
+          transition = @state.transition_for(event)
+          if transition
+            transition.invoke(@state, self, args)
+          else
+            raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
+          end
         end
       else
         raise StatemachineException.new("The state machine isn't in any state while processing the '#{event}' event.")
@@ -146,11 +150,8 @@ module Statemachine
     end
 
     def method_missing(message, *args) #:nodoc:
-      if @state
-        if @state.is_a? Parallelstate
-          @state.process_event(message.to_sym, *args)
-        else
-          if @state.transition_for(message)
+
+          if @state and @state.transition_for(message)
             process_event(message.to_sym, *args)
             # method = self.method(:process_event)
             # params = [message.to_sym].concat(args)
@@ -162,18 +163,19 @@ module Statemachine
               process_event(message.to_sym, *args)
             end
           end
-        end
       end
-    end
 
     def is_in_state?(id)
-      # check if it is the actual state
+      # check if it is one of the actual states
       return true if states().index id
-      
-      # check if this state exists
-      return false if not @states.has_key?(id)
-      
-      return @state.has_superstate(id)
+
+      # check if it is one of the superstates
+      return true if @state.has_superstate(id)
+
+      # check if it is one of the running parallel states
+      if @state.is_a? Parallelstate
+        return @state.is_in_state?(id)
+      end
     end
     
 
