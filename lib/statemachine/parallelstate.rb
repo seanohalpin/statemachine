@@ -25,9 +25,9 @@ module Statemachine
       return transition
     end
 
-    def is_in_state?(id)
+    def In(id)
       @parallel_statemachines.each do |s|
-        return true if s.is_in_state?(id)
+        return true if s.In(id)
       end
       return false
     end
@@ -45,7 +45,15 @@ module Statemachine
       exceptions = []
       @parallel_statemachines.each do |s|
         begin
-          s.process_event(event,*args)
+          state = s.get_state(s.state)
+          if state
+            transition = state.transition_for(event)
+            cond = true
+            cond = instance_eval(transition.cond) if transition.cond != true
+            if transition and cond
+              s.process_event(event,*args)
+            end
+          end
         rescue Exception => e
           exceptions.push e
         end

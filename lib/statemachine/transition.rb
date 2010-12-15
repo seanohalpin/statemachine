@@ -3,13 +3,14 @@ module Statemachine
   class Transition #:nodoc:
 
     attr_reader :origin_id, :event, :action
-    attr_accessor :destination_id
+    attr_accessor :destination_id, :cond
 
-    def initialize(origin_id, destination_id, event, action)
+    def initialize(origin_id, destination_id, event, action, cond)
       @origin_id = origin_id
       @destination_id = destination_id
       @event = event
       @action = action
+      @cond = cond
     end
 
     def invoke(origin, statemachine, args)
@@ -35,7 +36,7 @@ module Statemachine
     end
 
     def to_s
-      return "#{@origin_id} ---#{@event}---> #{@destination_id} : #{action}"
+      return "#{@origin_id} ---#{@event}---> #{@destination_id} : #{action} if #{cond}"
     end
 
     private

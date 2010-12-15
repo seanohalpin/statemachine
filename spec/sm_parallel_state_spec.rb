@@ -52,27 +52,27 @@ describe "Nested parallel" do
   it "support testing with 'in' condition for  superstates " do
     @sm.go
     @sm.process_event(:coin)
-    @sm.is_in_state?(:unlocked).should == true
+    @sm.In(:unlocked).should == true
   end
 
   it "support testing with 'in' condition for parallel  superstates " do
     @sm.go
     @sm.coin
-    @sm.is_in_state?(:onoff).should == true
-    @sm.is_in_state?(:operative).should == true
-    @sm.is_in_state?(:on).should == true
+    @sm.In(:onoff).should == true
+    @sm.In(:operative).should == true
+    @sm.In(:on).should == true
 
 #    @sm.is_in_state?(:second).should == true
 
     @sm.maintain # TODO not working
-    @sm.is_in_state?(:maintenance).should == true
+    @sm.In(:maintenance).should == true
   end
 
   it "supports process_event for parallel states" do
     @sm.go
     @sm.process_event(:coin)
-    @sm.is_in_state?(:onoff).should == true
-    @sm.is_in_state?(:operative).should == true
-    @sm.is_in_state?(:on).should == true
+    @sm.In(:onoff).should == true
+    @sm.In(:operative).should == true
+    @sm.In(:on).should == true
   end
 end

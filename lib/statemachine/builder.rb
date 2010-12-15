@@ -80,8 +80,8 @@ module Statemachine
     #     end
     #   end
     #   
-    def event(event, destination_id, action = nil)
-      @subject.add(Transition.new(@subject.id, destination_id, event, action))
+    def event(event, destination_id, action = nil, cond = true)
+      @subject.add(Transition.new(@subject.id, destination_id, event, action, cond))
     end
     
     def on_event(event, options)
@@ -121,8 +121,8 @@ module Statemachine
     #     end
     #   end
     #    
-    def default(destination_id, action = nil)
-      @subject.default_transition = Transition.new(@subject.id, destination_id, nil, action)
+    def default(destination_id, action = nil, cond = true)
+      @subject.default_transition = Transition.new(@subject.id, destination_id, nil, action, cond)
     end
   end
   
@@ -170,9 +170,9 @@ module Statemachine
     #     trans :locked, :coin, :unlocked, :unlock
     #   end
     #
-    def trans(origin_id, event, destination_id, action = nil)
+    def trans(origin_id, event, destination_id, action = nil, cond = true)
       origin = acquire_state_in(origin_id, @subject)
-      origin.add(Transition.new(origin_id, destination_id, event, action))
+      origin.add(Transition.new(origin_id, destination_id, event, action, cond))
     end
 
     def transition_from(origin_id, options)

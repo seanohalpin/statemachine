@@ -60,7 +60,7 @@ module Statemachine
       @states.values.each { |state| state.reset }
     end
 
-    # Return the id of the current state of the statemachine.
+    #Return the id of the current state of the statemachine.
     def state
       return @state.id
     end
@@ -100,7 +100,11 @@ module Statemachine
         else
           transition = @state.transition_for(event)
           if transition
+           cond = true
+          cond = instance_eval(transition.cond) if transition.cond != true and not @is_parallel
+          if cond
             transition.invoke(@state, self, args)
+          end
           else
             raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
           end
@@ -150,22 +154,21 @@ module Statemachine
     end
 
     def method_missing(message, *args) #:nodoc:
-
-          if @state and @state.transition_for(message)
-            process_event(message.to_sym, *args)
-            # method = self.method(:process_event)
-            # params = [message.to_sym].concat(args)
-            # method.call(*params)
-          else
-            begin
-              super(message, args)
-            rescue NoMethodError
-              process_event(message.to_sym, *args)
-            end
-          end
+      if @state and @state.transition_for(message)
+        process_event(message.to_sym, *args)
+        # method = self.method(:process_event)
+        # params = [message.to_sym].concat(args)
+        # method.call(*params)
+      else
+        begin
+          super(message, args)
+        rescue NoMethodError
+          process_event(message.to_sym, *args)
+        end
+       end
       end
 
-    def is_in_state?(id)
+    def In(id)
       # check if it is one of the actual states
       return true if states().index id
 
@@ -174,7 +177,7 @@ module Statemachine
 
       # check if it is one of the running parallel states
       if @state.is_a? Parallelstate
-        return @state.is_in_state?(id)
+        return @state.In(id)
       end
     end
     
