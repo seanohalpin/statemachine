@@ -2,7 +2,7 @@ module Statemachine
 
   class Parallelstate< Superstate 
   
-    attr_accessor :parallel_statemachines
+    attr_accessor :parallel_statemachines, :id
   
     def initialize(id, superstate, statemachine)
       super(id, superstate, statemachine)
@@ -11,7 +11,13 @@ module Statemachine
     
     def add_statemachine(statemachine)
       statemachine.is_parallel=self
-      @parallel_statemachines.push(statemachine)      
+      @parallel_statemachines.push(statemachine)
+    end
+
+    def get_statemachine_with(id)
+      @parallel_statemachines.each do |s|
+         return s if s.has_state(id)
+      end
     end
 
     def non_default_transition_for(event)
@@ -27,14 +33,15 @@ module Statemachine
 
     def In(id)
       @parallel_statemachines.each do |s|
-        return true if s.In(id)
+        return true if s.In(id.to_sym)
       end
       return false
     end
 
-
     def has_state(id)
-      @statemachine.has_state(id)
+      @parallel_statemachines.each do |s|
+        return true if s.has_state(id)  
+      end
     end
 
     def get_state(id)
@@ -68,8 +75,16 @@ module Statemachine
       end
      end
 
+    # Resets all of the statemachines back to theirs starting state.
+    def reset
+      @parallel_statemachines.each do |s|
+        s.reset
+      end
+    end
+
+
     def concrete?
-      return false
+      return true
     end
 
     def startstate

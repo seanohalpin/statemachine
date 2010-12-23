@@ -56,7 +56,6 @@ module Statemachine
       end
       raise StatemachineException.new("The state machine doesn't know where to start. Try setting the startstate.") if @state == nil
       @state.enter
-
       @states.values.each { |state| state.reset }
     end
 
@@ -67,8 +66,9 @@ module Statemachine
 
     # returns an array with the ids of the current active states of the machine.
     def states(atomic = true)
-      if @state.is_a? Parallelstate
-        return @state.states
+      belongs, parallel = belongs_to_parallel(@state.id)
+      if belongs
+        return parallel.states
       else
         return [@state.id]
       end
@@ -95,16 +95,17 @@ module Statemachine
       event = event.to_sym
       trace "Event: #{event}"
       if @state
-        if @state.is_a? Parallelstate
-          @state.process_event(event, *args)
+        belongs, parallel = belongs_to_parallel(@state.id)
+        if belongs
+          parallel.process_event(event, *args)
         else
           transition = @state.transition_for(event)
           if transition
-           cond = true
-          cond = instance_eval(transition.cond) if transition.cond != true and not @is_parallel
-          if cond
-            transition.invoke(@state, self, args)
-          end
+            cond = true
+            cond = instance_eval(transition.cond) if transition.cond != true and @is_parallel == nil
+            if cond
+              transition.invoke(@state, self, args)
+            end
           else
             raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
           end
@@ -116,6 +117,20 @@ module Statemachine
 
     def trace(message) #:nodoc:
       @tracer.puts message if @tracer
+    end
+
+    def belongs_to_parallel(id)
+      @states.each_value do |v|
+        return [v.has_state(id),v] if v.is_a? Parallelstate
+      end
+      return false
+    end
+
+    def get_parallel
+      @states.each_value do |v|
+        return v if v.is_a? Parallelstate
+      end
+      return false
     end
 
     def get_state(id) #:nodoc:
@@ -137,6 +152,10 @@ module Statemachine
 
     def add_state(state) #:nodoc:
       @states[state.id] = state
+    end
+
+    def remove_state(state)
+      @states.delete(state.id)
     end
 
     def has_state(id) #:nodoc:

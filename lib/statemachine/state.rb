@@ -58,7 +58,13 @@ module Statemachine
     end
 
     def activate
-      @statemachine.state = self
+      parallel = @statemachine.get_parallel
+      if parallel
+        s = parallel.get_statemachine_with(self.id)
+        s.state = self if s
+      else
+        @statemachine.state = self
+      end
     end
 
     def concrete?

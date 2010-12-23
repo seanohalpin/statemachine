@@ -330,7 +330,6 @@ module Statemachine
       super statemachine
       @subject = Parallelstate.new(id, superstate, statemachine)
       superstate.startstate_id = id if superstate.startstate_id == nil
-
       statemachine.add_state(@subject)
       #puts "added #{@subject.inspect}"
     end
