@@ -31,19 +31,19 @@ describe "Nested parallel" do
     @sm.state.should eql :start
     @sm.go
     @sm.state.should eql :p
-    @sm.states.should == [:locked,:on]
+    @sm.states_id.should == [:locked,:on]
     @sm.coin
     @sm.state.should eql :p
-    @sm.states.should == [:unlocked,:on]
+    @sm.states_id.should == [:unlocked,:on]
     @sm.toggle
     @sm.state.should eql :p
-    @sm.states.should == [:unlocked,:off]
+    @sm.states_id.should == [:unlocked,:off]
   end
 
   it "supports leaving a parallel state" do
-    @sm.states.should == [:start]
+    @sm.states_id.should == [:start]
     @sm.go
-    @sm.states.should == [:locked,:on]
+    @sm.states_id.should == [:locked,:on]
     @sm.maintain
     @sm.state.should == :maintenance
 

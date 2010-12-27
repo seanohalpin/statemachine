@@ -33,7 +33,7 @@ module Statemachine
     # is responsible for all the behavior.
     attr_accessor :context
 
-    attr_reader :root
+    attr_reader :root, :states
     attr_accessor :messenger, :message_queue, :is_parallel #:nodoc:
 
     # Should not be called directly.  Instances of Statemachine::Statemachine are created
@@ -65,7 +65,7 @@ module Statemachine
     end
 
     # returns an array with the ids of the current active states of the machine.
-    def states(atomic = true)
+    def states_id(atomic = true)
       belongs, parallel = belongs_to_parallel(@state.id)
       if belongs
         return parallel.states
@@ -98,6 +98,7 @@ module Statemachine
         belongs, parallel = belongs_to_parallel(@state.id)
         if belongs
           parallel.process_event(event, *args)
+
         else
           transition = @state.transition_for(event)
           if transition
@@ -121,9 +122,11 @@ module Statemachine
 
     def belongs_to_parallel(id)
       @states.each_value do |v|
+        # It doesn't belong to parallel, it is parallel
+        return [true, v] if v.id == id and v.is_a? Parallelstate
         return [v.has_state(id),v] if v.is_a? Parallelstate
       end
-      return false
+      return [false, nil]
     end
 
     def get_parallel
@@ -189,14 +192,15 @@ module Statemachine
 
     def In(id)
       # check if it is one of the actual states
-      return true if states().index id
+      return true if states.key?(id)
 
       # check if it is one of the superstates
       return true if @state.has_superstate(id)
 
       # check if it is one of the running parallel states
-      if @state.is_a? Parallelstate
-        return @state.In(id)
+      belongs, parallel = belongs_to_parallel(@state.id)
+      if belongs
+        return parallel.In(id)
       end
     end
     

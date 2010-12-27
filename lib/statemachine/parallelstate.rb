@@ -40,17 +40,20 @@ module Statemachine
 
     def has_state(id)
       @parallel_statemachines.each do |s|
-        return true if s.has_state(id)  
+        if s.has_state(id)
+          return true
+        end
       end
+      return false
     end
 
     def get_state(id)
        @statemachine.get_state(id) 
     end
 
-     def  process_event(event, *args)
+    def process_event(event, *args)
       exceptions = []
-      @parallel_statemachines.each do |s|
+      @parallel_statemachines.each_with_index do |s,i|
         begin
           state = s.get_state(s.state)
           if state
@@ -59,6 +62,7 @@ module Statemachine
             cond = instance_eval(transition.cond) if transition.cond != true
             if transition and cond
               s.process_event(event,*args)
+              @statemachine.state = s.state
             end
           end
         rescue Exception => e
@@ -81,7 +85,6 @@ module Statemachine
         s.reset
       end
     end
-
 
     def concrete?
       return true

@@ -24,7 +24,6 @@ module Statemachine
     def non_default_transition_for(event)
       transition = @transitions[event]
       if @superstate
-       # p "checking superstate: #{@superstate.id}"
         transition = @superstate.non_default_transition_for(event) if @superstate and not transition
       end
       return transition
@@ -58,8 +57,8 @@ module Statemachine
     end
 
     def activate
-      parallel = @statemachine.get_parallel
-      if parallel
+      belongs, parallel = @statemachine.belongs_to_parallel(self.id)
+      if belongs and self.id != parallel.id
         s = parallel.get_statemachine_with(self.id)
         s.state = self if s
       else
