@@ -1,8 +1,11 @@
 require File.dirname(__FILE__) + '/spec_helper'
+require "noodle"
 
 describe "Nested parallel" do
   before(:each) do
     @out_out_order = false
+    @locked = true
+    @noodle = Noodle.new
 
     @sm = Statemachine.build do
       trans :start,:go,:p
@@ -10,7 +13,7 @@ describe "Nested parallel" do
       parallel :p do
         statemachine :s1 do
           superstate :operative do
-            trans :locked, :coin, :unlocked, Proc.new { @locked = false }
+            trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
             trans :unlocked, :coin, :locked
             event :maintain, :maintenance, Proc.new { @out_of_order = true }
           end
@@ -24,9 +27,12 @@ describe "Nested parallel" do
       end
     end
 
-   @sm.context = self
+  @sm.context = @noodle
   end
-
+# @TODO add tests that set a certain state that is part of a parallel state machine
+  # to check if
+  # the other sub statemachine is set to the initial state
+  # the other sub state machines states doe not change if already in this parallel state machine
   it "supports entering a parallel state" do
     @sm.state.should eql :start
     @sm.go
@@ -75,4 +81,21 @@ describe "Nested parallel" do
     @sm.In(:operative).should == true
     @sm.In(:on).should == true
   end
+
+  it "supports calling transition actions inside parallel state changes" do
+    @noodle.cooked.should equal(false)
+    @sm.go
+    @sm.process_event(:coin)
+    @noodle.cooked.should equal(true)
+  end
+
+  it "supports calling transition actions inside parallel state changes from instant context set by process_event" do
+    @noodle2 = Noodle.new
+    @noodle2.cooked.should equal(false)
+    @sm.go
+    @sm.process_event(:coin,@noodle2)
+    @noodle2.cooked.should equal(true)
+  end
+
+
 end

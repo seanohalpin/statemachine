@@ -8,10 +8,17 @@ module Statemachine
       super(id, superstate, statemachine)
       @parallel_statemachines=[]
     end
-    
+
+    def context= c
+      @parallel_statemachines.each do |s|
+         return s if s.context=c
+      end
+    end
+
     def add_statemachine(statemachine)
       statemachine.is_parallel=self
       @parallel_statemachines.push(statemachine)
+      statemachine.context = @statemachine.context
     end
 
     def get_statemachine_with(id)
@@ -35,6 +42,16 @@ module Statemachine
       @parallel_statemachines.each do |s|
         return true if s.In(id.to_sym)
       end
+      return false
+    end
+
+    def state= id
+     @parallel_statemachines.each do |s|
+        if s.has_state(id)
+          s.state=id
+          return true
+        end
+     end
       return false
     end
 

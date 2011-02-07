@@ -31,7 +31,7 @@ module Statemachine
     # where all actions will be invoked.  This provides a way to separate logic from
     # behavior.  The statemachine is responsible for all the logic and the context
     # is responsible for all the behavior.
-    attr_accessor :context
+    attr_reader :context
 
     attr_reader :root, :states
     attr_accessor :messenger, :message_queue, :is_parallel #:nodoc:
@@ -59,6 +59,15 @@ module Statemachine
       @states.values.each { |state| state.reset }
     end
 
+    def context= c
+      @context = c
+
+      p = get_parallel
+      if p
+        p.context = c    
+      end
+    end
+
     #Return the id of the current state of the statemachine.
     def state
       return @state.id
@@ -83,6 +92,24 @@ module Statemachine
         @state = @states[value]
       elsif value and @states[value.to_sym]
         @state = @states[value.to_sym]
+      end
+    end
+
+    def states= values
+      if values.is_a? Array and values.length==1
+        self.state=values.first
+      else
+        values.each do |v|
+          if @states.has_key? v
+            self.state=v
+          else
+            belongs,parallel = belongs_to_parallel(v)
+            if belongs
+              self.state=parallel.id
+              parallel.state=v
+            end
+          end
+        end
       end
     end
 
