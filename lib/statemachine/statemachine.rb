@@ -56,7 +56,10 @@ module Statemachine
       end
       raise StatemachineException.new("The state machine doesn't know where to start. Try setting the startstate.") if @state == nil
       @state.enter
-      @states.values.each { |state| state.reset }
+      @states.values.each { |state|
+#
+        state.reset if not state.is_a? Parallelstate
+      }
     end
 
     def context= c
@@ -64,7 +67,7 @@ module Statemachine
 
       p = get_parallel
       if p
-        p.context = c    
+        p.context = c
       end
     end
 
@@ -125,12 +128,15 @@ module Statemachine
         belongs, parallel = belongs_to_parallel(@state.id)
         if belongs
           parallel.process_event(event, *args)
-
         else
           transition = @state.transition_for(event)
           if transition
             cond = true
-            cond = instance_eval(transition.cond) if transition.cond != true and @is_parallel == nil
+            if transition.cond!=true and transition.cond.is_a? Proc
+              cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
+            else
+              cond = instance_eval(transition.cond) if transition.cond != true and @is_parallel == nil
+            end
             if cond
               transition.invoke(@state, self, args)
             end
@@ -214,12 +220,12 @@ module Statemachine
         rescue NoMethodError
           process_event(message.to_sym, *args)
         end
-       end
       end
+    end
 
     def In(id)
       # check if it is one of the actual states
-      return true if states.key?(id)
+      return true if @state.id == id
 
       # check if it is one of the superstates
       return true if @state.has_superstate(id)
@@ -230,7 +236,6 @@ module Statemachine
         return parallel.In(id)
       end
     end
-    
 
     private
 
