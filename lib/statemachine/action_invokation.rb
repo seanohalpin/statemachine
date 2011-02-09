@@ -8,14 +8,14 @@ module Statemachine
       end
       action.each {|a|
         if a.is_a? Symbol
-          invoke_method(a, args, message)
+          return invoke_method(a, args, message)
         elsif a.is_a? Proc
-          invoke_proc(a, args, message)
+          return invoke_proc(a, args, message)
         elsif a.is_a? Array
-          send(a[0],a[1])
+          return send(a[0],a[1])
         else
           log("#{a}")
-          invoke_string(a) if not messenger
+          return invoke_string(a) if not messenger
         end
        }
     end
