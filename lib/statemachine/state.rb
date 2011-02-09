@@ -88,6 +88,11 @@ module Statemachine
       return @superstate.has_superstate(id)
     end
 
+    def abstract_states
+      return {} if not superstate
+      return @superstate.abstract_states
+    end
+
   end
   
 end

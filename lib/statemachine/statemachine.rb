@@ -86,6 +86,11 @@ module Statemachine
       end
     end
 
+    # returns an array with all currently active super states
+    def abstract_states
+      @state.abstract_states.keys
+    end
+
     # You may change the state of the statemachine by using this method.  The parameter should be
     # the id of the desired state.
     def state= value

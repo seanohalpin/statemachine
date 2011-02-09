@@ -42,7 +42,11 @@ module Statemachine
     def to_s
       return "'#{id}' superstate"
     end
-  
+
+    def abstract_states
+      return {@id=>true} if not @superstate
+      {@id=>true}.merge(@superstate.abstract_states)
+    end
   end
 
 end

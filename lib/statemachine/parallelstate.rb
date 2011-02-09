@@ -142,7 +142,14 @@ module Statemachine
     def to_s
       return "'#{id}' parallel"
     end
-  
+
+    def abstract_states
+      abstract_states={}
+      @parallel_statemachines.each do |s|
+        abstract_states.merge!(s.abstract_states)
+      end
+      abstract_states
+    end
   end
 
 end
