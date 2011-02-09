@@ -11,7 +11,7 @@ module Statemachine
 
     def context= c
       @parallel_statemachines.each do |s|
-         return s if s.context=c
+         s.context=c
       end
     end
 
@@ -74,13 +74,8 @@ module Statemachine
         begin
           state = s.get_state(s.state)
           if state
-            transition = state.transition_for(event)
-            cond = true
-            cond = instance_eval(transition.cond) if transition.cond != true
-            if transition and cond
-              s.process_event(event,*args)
-              @statemachine.state = s.state
-            end
+            s.process_event(event,*args)
+            @statemachine.state = s.state
           end
         rescue Exception => e
           exceptions.push e
@@ -126,10 +121,6 @@ module Statemachine
     def default_history=(state_id)
       @history_id = @default_history_id = state_id
     end
-    
-    def reset
-      @history_id = @default_history_id
-    end
 
     def states
       return @parallel_statemachines.map &:state
@@ -144,6 +135,10 @@ module Statemachine
       end
     end
 
+    def enter(args=[])
+      reset
+      super(args)
+    end
     def to_s
       return "'#{id}' parallel"
     end
