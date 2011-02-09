@@ -317,7 +317,11 @@ module Statemachine
     def statemachine (id, &block)
       builder = StatemachineBuilder.new
       builder.instance_eval(&block) if block
-      builder.statemachine.reset
+      if not @subject.is_a? Parallelstate
+        # Only reset statemachine if it's the root one. Otherwise
+        # the inital states on_entry function would be called!
+        builder.statemachine.reset
+      end
       # puts "build statemachine #{builder.statemachine.inspect}"
       
       @subject.add_statemachine builder.statemachine
