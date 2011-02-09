@@ -20,7 +20,13 @@ module Statemachine
       messenger = origin.statemachine.messenger
       message_queue = origin.statemachine.message_queue
 
-      origin.statemachine.invoke_action(@action, args, "transition action from #{origin} invoked by '#{@event}' event", messenger, message_queue) if @action
+       if @action # changed this if statement to return if action fails
+        if not origin.statemachine.invoke_action(@action, args, "transition action from #{origin} invoked by '#{@event}' event", messenger, message_queue)
+          return
+        end
+      end
+
+#      origin.statemachine.invoke_action(@action, args, "transition action from #{origin} invoked by '#{@event}' event", messenger, message_queue) if @action
 
       terminal_state = entries.last
       terminal_state.activate if terminal_state
