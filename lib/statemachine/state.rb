@@ -57,13 +57,13 @@ module Statemachine
     end
 
     def activate
-      belongs, parallel = @statemachine.belongs_to_parallel(self.id)
-      if belongs and self.id != parallel.id
-        s = parallel.get_statemachine_with(self.id)
-        s.state = self if s
+      @statemachine.state = self
+      if (@statemachine.is_parallel)
+       @statemachine.activation.call(self.id,@statemachine.is_parallel.abstract_states,@statemachine.is_parallel.statemachine.states_id) if @statemachine.activation
       else
-        @statemachine.state = self
-      end
+
+        @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
+     end
     end
 
     def concrete?

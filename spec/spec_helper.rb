@@ -26,6 +26,38 @@ module SwitchStatemachine
 
 end
 
+module ParallelStatemachine
+
+  def create_parallel
+
+     @cooked = "false"
+     @out_of_order = false
+
+     @sm = Statemachine.build do
+      trans :start,:go,:p
+      state :maintenance
+      parallel :p do
+        statemachine :s1 do
+          superstate :operative do
+            trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
+            trans :unlocked, :coin, :locked
+            event :maintain, :maintenance, Proc.new { @out_of_order = true }
+          end
+        end
+        statemachine :s2 do
+          superstate :onoff do
+            trans :on, :toggle, :off
+            trans :off, :toggle, :on
+          end
+        end
+      end
+    end
+    @sm.context = self
+  end
+end
+
+
+
 module TurnstileStatemachine
 
   def create_turnstile

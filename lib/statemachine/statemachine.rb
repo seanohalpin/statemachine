@@ -35,6 +35,7 @@ module Statemachine
 
     attr_reader :root, :states
     attr_accessor :messenger, :message_queue, :is_parallel #:nodoc:
+    attr_accessor :activation
 
     # Should not be called directly.  Instances of Statemachine::Statemachine are created
     # through the Statemachine.build method.

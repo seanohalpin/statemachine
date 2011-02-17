@@ -15,6 +15,20 @@ module Statemachine
       end
     end
 
+    def activate
+       @statemachine.state = self
+
+       @parallel_statemachines.each do |s|
+          s.activation = @statemachine.activation   
+          s.reset
+       end
+       @parallel_statemachines.each do |s|
+
+       @statemachine.activation.call(s.state,self.abstract_states,self.states) if @statemachine.activation
+       end
+      
+    end
+
     def add_statemachine(statemachine)
       statemachine.is_parallel=self
       @parallel_statemachines.push(statemachine)
@@ -70,24 +84,15 @@ module Statemachine
 
     def process_event(event, *args)
       exceptions = []
+      result = false
       @parallel_statemachines.each_with_index do |s,i|
-        begin
-          state = s.get_state(s.state)
-          if state
+          if s.respond_to? event
             s.process_event(event,*args)
-            @statemachine.state = s.state
+            result = true
           end
-        rescue Exception => e
-          exceptions.push e
-        end
       end
-
-      if exceptions.length<@parallel_statemachines.length
-        return true
-      else
-        exceptions.each do |e|
-          raise e
-        end
+      if (result == false)
+        raise "parallel states #{states} do not respond to event #{event}"        
       end
      end
 
@@ -144,11 +149,15 @@ module Statemachine
     end
 
     def abstract_states
-      abstract_states={}
-      @parallel_statemachines.each do |s|
-        abstract_states.merge!(s.abstract_states)
+      abstract_states=[]
+
+      if (@superstate)
+        abstract_states=@superstate.abstract_states.keys
       end
-      abstract_states
+      @parallel_statemachines.each do |s|
+        abstract_states += s.abstract_states
+      end
+      abstract_states.uniq
     end
   end
 
