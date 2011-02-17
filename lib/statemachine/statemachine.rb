@@ -105,7 +105,7 @@ module Statemachine
 
     def states= values
       if values.is_a? Array and values.length==1
-        self.state=values.first
+        self.state=self.get_state(values.first)
       else
         values.each do |v|
           if @states.has_key? v
