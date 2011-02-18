@@ -44,8 +44,8 @@ module Statemachine
     end
 
     def abstract_states
-      return {@id=>true} if not @superstate
-      {@id=>true}.merge(@superstate.abstract_states)
+      return [@id] if not @superstate
+      ([@id] + @superstate.abstract_states).uniq
     end
   end
 

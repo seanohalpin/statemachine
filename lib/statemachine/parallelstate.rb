@@ -152,7 +152,7 @@ module Statemachine
       abstract_states=[]
 
       if (@superstate)
-        abstract_states=@superstate.abstract_states.keys
+        abstract_states=@superstate.abstract_states
       end
       @parallel_statemachines.each do |s|
         abstract_states += s.abstract_states

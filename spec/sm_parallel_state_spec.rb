@@ -98,5 +98,11 @@ describe "Nested parallel" do
     @noodle2.cooked.should equal(true)
   end
 
+  it "should support state recovery" do
+    @sm.states=[:locked,:off]
+    @sm.toggle
+    puts @sm.abstract_states
+  end
+
 
 end

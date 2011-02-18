@@ -89,7 +89,7 @@ module Statemachine
 
     # returns an array with all currently active super states
     def abstract_states
-      @state.abstract_states.keys
+      @state.abstract_states
     end
 
     # You may change the state of the statemachine by using this method.  The parameter should be
