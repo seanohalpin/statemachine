@@ -340,6 +340,7 @@ describe Statemachine::Statemachine, "(Java)" do
     lines.shift.should == "    {"
     lines.shift.should == "      statemachine.getContext().alarm();"
     lines.shift.should == "      statemachine.setState(statemachine.LOCKED);"
+    lines.shift.should == "      statemachine.getContext().lock();"    # this has been added since my modifications don't know why'
     lines.shift.should == "    }"
     lines.shift.should == ""
     lines.shift.should == "  }"
