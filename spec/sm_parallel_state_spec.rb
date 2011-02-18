@@ -93,7 +93,8 @@ describe "Nested parallel" do
     @noodle2 = Noodle.new
     @noodle2.cooked.should equal(false)
     @sm.go
-    @sm.process_event(:coin,@noodle2)
+    @sm.context = @noodle2
+    @sm.process_event(:coin)
     @noodle2.cooked.should equal(true)
   end
 
