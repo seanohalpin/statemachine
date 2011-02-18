@@ -67,6 +67,13 @@ module ParallelStatemachine
     end
     @sm.context = self
   end
+
+   def create_tome
+    @sm = Statemachine.build do
+      trans :me, :toggle, :me
+    end
+    @sm.context = self
+  end
 end
 
 

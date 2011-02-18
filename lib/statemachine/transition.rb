@@ -35,7 +35,7 @@ module Statemachine
     end
 
     def exits_and_entries(origin, destination)
-      return [], [] if origin == destination
+     # return [], [] if origin == destination
       exits = []
       entries = exits_and_entries_helper(exits, origin, destination)
       return exits, entries.reverse

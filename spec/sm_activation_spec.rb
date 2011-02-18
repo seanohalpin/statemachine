@@ -77,4 +77,15 @@ describe "State Activation Callback" do
     @callback.abstract_states.last.should == [:root]
   end
 
+  it "activation works for self-transitions as well" do
+    create_tome
+    @sm.activation=@callback.method(:activate)
+    @sm.toggle
+    @callback.called.length.should == 1
+    @callback.state.last.should == :me
+    @callback.atomic_states.last.should == [:me]
+    @callback.abstract_states.last.should == [:root]
+  end
+
+
 end
