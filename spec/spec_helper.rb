@@ -84,16 +84,16 @@ module TurnstileStatemachine
     @locked = true
     @alarm_status = false
     @thankyou_status = false
-    @lock = "@locked = true"
-    @unlock = "@locked = false"
-    @alarm = "@alarm_status = true"
-    @thankyou = "@thankyou_status = true"
+    @lock = "@locked = true;true"
+    @unlock = "@locked = false;true"
+    @alarm = "@alarm_status = true;true"
+    @thankyou = "@thankyou_status = true;true"
 
     @sm = Statemachine.build do
-      trans :locked, :coin, :unlocked, "@locked = false"
-      trans :unlocked, :pass, :locked, "@locked = true"
-      trans :locked, :pass, :locked, "@alarm_status = true"
-      trans :unlocked, :coin, :locked, "@thankyou_status = true"
+      trans :locked, :coin, :unlocked, "@locked = false;true"
+      trans :unlocked, :pass, :locked, "@locked = true;true"
+      trans :locked, :pass, :locked, "@alarm_status = true;true"
+      trans :unlocked, :coin, :locked, "@thankyou_status = true;true"
     end
     @sm.context = self
   end
