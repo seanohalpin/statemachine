@@ -54,6 +54,19 @@ module ParallelStatemachine
     end
     @sm.context = self
   end
+
+  def create_tick
+    @status = "off"
+    @sm = Statemachine.build do
+      trans :off, :toggle, :on
+      trans :on, :toggle, :off
+      state :on do
+         on_entry Proc.new { @sm.toggle }
+      end
+
+    end
+    @sm.context = self
+  end
 end
 
 
