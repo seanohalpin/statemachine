@@ -6,18 +6,21 @@ module Statemachine
       if !(action.is_a? Array)
         action = [action]
       end
+      result = true
       action.each {|a|
         if a.is_a? Symbol
-          return invoke_method(a, args, message)
+          result = invoke_method(a, args, message)
         elsif a.is_a? Proc
-          return invoke_proc(a, args, message)
+          result = invoke_proc(a, args, message)
         elsif a.is_a? Array
-          return send(a[0],a[1])
+          result = send(a[0],a[1])
         else
           log("#{a}")
-          return invoke_string(a) if not messenger
+          result =invoke_string(a) if not messenger
         end
+        return false if result ==false
        }
+      result
     end
 
     private
