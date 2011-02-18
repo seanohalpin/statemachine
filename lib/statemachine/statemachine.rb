@@ -178,6 +178,8 @@ module Statemachine
     def get_state(id) #:nodoc:
       if @states.has_key? id
         return @states[id]
+      elsif @is_parallel and @is_parallel.statemachine.get_state(id)
+        return @is_parallel.statemachine.states[id]
       elsif(is_history_state_id?(id))
         superstate_id = base_id(id)
         superstate = @states[superstate_id]
