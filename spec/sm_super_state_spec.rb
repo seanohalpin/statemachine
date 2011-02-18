@@ -10,13 +10,13 @@ describe "Turn Stile" do
     
     @sm = Statemachine.build do 
       superstate :operative do
-        trans :locked, :coin, :unlocked, Proc.new { @locked = false }
-        trans :unlocked, :pass, :locked, Proc.new { @locked = true }
-        trans :locked, :pass, :locked, Proc.new { @alarm_status = true }
-        trans :unlocked, :coin, :locked, Proc.new { @thankyou_status = true }
-        event :maintain, :maintenance, Proc.new { @out_of_order = true }
+        trans :locked, :coin, :unlocked, Proc.new { @locked = false;true}
+        trans :unlocked, :pass, :locked, Proc.new { @locked = true ;true}
+        trans :locked, :pass, :locked, Proc.new { @alarm_status = true ;true}
+        trans :unlocked, :coin, :locked, Proc.new { @thankyou_status = true ;true}
+        event :maintain, :maintenance, Proc.new { @out_of_order = true ;true}
       end
-      trans :maintenance, :operate, :operative, Proc.new { @out_of_order = false } 
+      trans :maintenance, :operate, :operative, Proc.new { @out_of_order = false;true } 
       startstate :locked
     end
     @sm.context = self
