@@ -236,11 +236,21 @@ module Statemachine
       @subject = acquire_state_in(id, superstate)
     end
   end
-  
+
+  module ParallelstateBuilding
+    attr_reader :subject
+
+    def parallel (id, &block)
+      builder = ParallelStateBuilder.new(id, @subject, @statemachine)
+      builder.instance_eval(&block)
+    end
+  end
+
   # Builder class used to define superstates. Creates by SuperstateBuilding#superstate
   class SuperstateBuilder < Builder
     include StateBuilding
     include SuperstateBuilding
+    include ParallelstateBuilding
     
     def initialize(id, superstate, statemachine)
       super statemachine
@@ -261,14 +271,7 @@ module Statemachine
     end
   end
 
-  module ParallelstateBuilding
-    attr_reader :subject
-    
-    def parallel (id, &block)
-      builder = ParallelStateBuilder.new(id, @subject, @statemachine)
-      builder.instance_eval(&block)
-    end
-  end
+
 
   
   # Created by Statemachine.build as the root context for building the statemachine.

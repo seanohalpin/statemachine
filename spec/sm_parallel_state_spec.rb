@@ -104,5 +104,32 @@ describe "Nested parallel" do
     puts @sm.abstract_states
   end
 
+  it "should support parallel states inside superstates" do
+    @sm = Statemachine.build do
+      trans :start,:go,:s
+      state :maintenance
+      superstate :s do
+        parallel :p do
+          statemachine :s1 do
+            superstate :operative do
+              trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
+              trans :unlocked, :coin, :locked
+              event :maintain, :maintenance, Proc.new { @out_of_order = true }
+            end
+          end
+          statemachine :s2 do
+            superstate :onoff do
+              trans :on, :toggle, :off
+              trans :off, :toggle, :on
+            end
+          end
+        end
+      end
+    end
+
+    @sm.go
+    @sm.states.should.eql? [:locked,:off]
+    
+  end
 
 end
