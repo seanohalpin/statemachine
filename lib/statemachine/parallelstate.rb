@@ -3,11 +3,26 @@ module Statemachine
   class Parallelstate< Superstate 
   
     attr_accessor :parallel_statemachines, :id
-  
+    attr_reader :startstate_ids
+
     def initialize(id, superstate, statemachine)
       super(id, superstate, statemachine)
       @parallel_statemachines=[]
+      @startstate_ids=[]
     end
+
+#    def startstate_id= id
+#      if @parallel_statemachines.size>0
+#        @startstate_ids[@parallel_statemachines.size-1]= id
+#      end
+#    end
+#
+#    def startstate_id
+#      if (@parallel_statemachines.size>0 and @parallel_statemachines.size==@startstate_ids.size)
+#        return true
+#      end
+#      nil
+#    end
 
     def context= c
       @parallel_statemachines.each do |s|
@@ -18,9 +33,9 @@ module Statemachine
     def activate
        @statemachine.state = self
 
-       @parallel_statemachines.each do |s|
+       @parallel_statemachines.each_with_index do |s,i|
           s.activation = @statemachine.activation   
-          s.reset
+          s.reset(@startstate_ids[i])
        end
        @parallel_statemachines.each do |s|
 
@@ -33,6 +48,8 @@ module Statemachine
       statemachine.is_parallel=self
       @parallel_statemachines.push(statemachine)
       statemachine.context = @statemachine.context
+      @startstate_ids << @startstate_id
+      @startstate_id = nil
     end
 
     def get_statemachine_with(id)
@@ -79,7 +96,15 @@ module Statemachine
     end
 
     def get_state(id)
-       @statemachine.get_state(id) 
+#      if state = @statemachine.get_state(id)
+#        return state
+#      end
+      @parallel_statemachines.each do |s|
+        if state = s.get_state(id)
+          return state
+        end
+      end
+      return nil
     end
 
     def process_event(event, *args)
@@ -98,8 +123,8 @@ module Statemachine
 
     # Resets all of the statemachines back to theirs starting state.
     def reset
-      @parallel_statemachines.each do |s|
-        s.reset
+      @parallel_statemachines.each_with_index do |s,i|
+        s.reset(@startstate_ids[i])
       end
     end
 
@@ -141,7 +166,7 @@ module Statemachine
     end
 
     def enter(args=[])
-      reset
+     # reset
       super(args)
     end
     def to_s
@@ -158,6 +183,9 @@ module Statemachine
         abstract_states += s.abstract_states
       end
       abstract_states.uniq
+    end
+    def is_parallel
+      true
     end
   end
 

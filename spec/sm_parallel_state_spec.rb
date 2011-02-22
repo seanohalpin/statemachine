@@ -132,4 +132,34 @@ describe "Nested parallel" do
     
   end
 
+   it "should support direct transitions into an atomic state of a parallel state set" do
+    @sm = Statemachine.build do
+      trans :start,:go, :unlocked
+      state :maintenance
+      superstate :s do
+        parallel :p do
+          statemachine :s1 do
+            superstate :operative do
+              trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
+              trans :unlocked, :coin, :locked
+              event :maintain, :maintenance, Proc.new { @out_of_order = true }
+            end
+          end
+          statemachine :s2 do
+            superstate :onoff do
+              trans :on, :toggle, :off
+              trans :off, :toggle, :on
+            end
+          end
+        end
+      end
+    end
+
+    @sm.go
+    @sm.state.should eql :p
+    @sm.states_id.should == [:unlocked,:on]
+    @sm.maintain
+    @sm.state.should eql :maintenance
+    @sm.states_id.should == [:maintenance]
+  end
 end

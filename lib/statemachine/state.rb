@@ -24,7 +24,7 @@ module Statemachine
     def non_default_transition_for(event)
       transition = @transitions[event]
       if @superstate
-        transition = @superstate.non_default_transition_for(event) if @superstate and not transition
+        transition = @superstate.non_default_transition_for(event) if @superstate and @superstate.is_parallel == false and not transition
       end
       return transition
     end
@@ -90,9 +90,13 @@ module Statemachine
 
     def abstract_states
       return [] if not superstate
-      return @superstate.abstract_states
+      return @superstate.abstract_states if not @superstate.is_parallel
+      []
     end
 
+    def is_parallel
+      false
+    end
   end
   
 end

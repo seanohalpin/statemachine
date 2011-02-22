@@ -318,7 +318,8 @@ module Statemachine
     attr_reader :subject
    
     def statemachine (id, &block)
-      builder = StatemachineBuilder.new
+      builder = StatemachineBuilder.new(Statemachine.new(@subject))
+      #builder = StatemachineBuilder.new
       builder.instance_eval(&block) if block
       if not @subject.is_a? Parallelstate
         # Only reset statemachine if it's the root one. Otherwise

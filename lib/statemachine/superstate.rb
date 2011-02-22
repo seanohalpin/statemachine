@@ -44,9 +44,10 @@ module Statemachine
     end
 
     def abstract_states
-      return [@id] if not @superstate
+      return [@id] if not @superstate or @superstate.is_parallel
       ([@id] + @superstate.abstract_states).uniq
     end
+  
   end
 
 end

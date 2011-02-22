@@ -50,15 +50,19 @@ module Statemachine
     end
 
     # Resets the statemachine back to its starting state.
-    def reset
-      @state = get_state(@root.startstate_id)
+    def reset(startstate_id=nil)
+
+      if (startstate_id and @root.is_parallel) # called when enterin a parallel state or dierctly entering a child of a parallel state from outside the parallel state
+        @state = get_state(startstate_id)
+      else
+        @state = get_state(@root.startstate_id)
+      end
       while @state and not @state.concrete?
         @state = get_state(@state.startstate_id)
       end
       raise StatemachineException.new("The state machine doesn't know where to start. Try setting the startstate.") if @state == nil
       @state.enter
       @states.values.each { |state|
-#
         state.reset if not state.is_a? Parallelstate
       }
     end
@@ -180,6 +184,8 @@ module Statemachine
         return @states[id]
       elsif @is_parallel and @is_parallel.statemachine.get_state(id)
         return @is_parallel.statemachine.states[id]
+      elsif p = get_parallel and s = p.get_state(id)
+        return s
       elsif(is_history_state_id?(id))
         superstate_id = base_id(id)
         superstate = @states[superstate_id]
