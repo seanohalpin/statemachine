@@ -30,18 +30,18 @@ module Statemachine
       end
     end
 
-    def activate
-       @statemachine.state = self
+    def activate(terminal_state = nil)
+      @statemachine.state = self
 
-       @parallel_statemachines.each_with_index do |s,i|
-          s.activation = @statemachine.activation   
-          s.reset(@startstate_ids[i])
-       end
-       @parallel_statemachines.each do |s|
+      @parallel_statemachines.each_with_index do |s,i|
+        s.activation = @statemachine.activation
+        s.reset(@startstate_ids[i])
+      end
+      @parallel_statemachines.each do |s|
+        next if terminal_state and s.has_state(terminal_state)
+        @statemachine.activation.call(s.state,self.abstract_states,self.states) if @statemachine.activation
+      end
 
-       @statemachine.activation.call(s.state,self.abstract_states,self.states) if @statemachine.activation
-       end
-      
     end
 
     def add_statemachine(statemachine)
@@ -116,9 +116,7 @@ module Statemachine
             result = true
           end
       end
-      if (result == false)
-        raise "parallel states #{states} do not respond to event #{event}"        
-      end
+      result
      end
 
     # Resets all of the statemachines back to theirs starting state.
@@ -161,8 +159,9 @@ module Statemachine
        # puts "checke parallel #{s.id} for #{event}"
         transition = s.get_state(s.state).non_default_transition_for(event)
         transition = s.get_state(s.state).default_transition if not transition
-        return transition   
+        return transition if transition
       end
+      super.transition_for(event)
     end
 
     def enter(args=[])

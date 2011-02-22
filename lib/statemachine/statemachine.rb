@@ -137,23 +137,24 @@ module Statemachine
       if @state
         belongs, parallel = belongs_to_parallel(@state.id)
         if belongs
-          parallel.process_event(event, *args)
-        else
-          transition = @state.transition_for(event)
-          if transition
-            cond = true
-            if transition.cond!=true and transition.cond.is_a? Proc
-              cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
-            else
-              cond = instance_eval(transition.cond) if transition.cond != true and @is_parallel == nil
-            end
-            if cond
-              transition.invoke(@state, self, args)
-            end
-          else
-            raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
-          end
+          r = parallel.process_event(event, *args)
+          return true if r
         end
+        transition = @state.transition_for(event)
+        if transition
+          cond = true
+          if transition.cond!=true and transition.cond.is_a? Proc
+            cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
+          else
+            cond = instance_eval(transition.cond) if transition.cond != true and @is_parallel == nil
+          end
+          if cond
+            transition.invoke(@state, self, args)
+          end
+        else
+          raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
+        end
+
       else
         raise StatemachineException.new("The state machine isn't in any state while processing the '#{event}' event.")
       end

@@ -87,5 +87,30 @@ describe "State Activation Callback" do
     @callback.abstract_states.last.should == [:root]
   end
 
+  it "should activate corretly on direct entry to parallel state" do
+    @sm = Statemachine.build do
+      trans :start,:go, :unlocked
+      parallel :p do
+        statemachine :s1 do
+          superstate :operative do
+            trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
+            trans :unlocked, :coin, :locked
+          end
+        end
+        statemachine :s2 do
+          superstate :onoff do
+            trans :on, :toggle, :off
+            trans :off, :toggle, :on
+          end
+        end
+      end
+    end
+
+    @sm.activation=@callback.method(:activate)
+    @sm.go
+    @callback.state.should.eql? [:unlocked,:on]
+    @callback.called.length.should == 2
+  end
+
 
 end

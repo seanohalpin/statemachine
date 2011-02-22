@@ -27,7 +27,7 @@ describe "Nested parallel" do
       end
     end
 
-  @sm.context = @noodle
+    @sm.context = @noodle
   end
 # @TODO add tests that set a certain state that is part of a parallel state machine
   # to check if
@@ -129,10 +129,10 @@ describe "Nested parallel" do
 
     @sm.go
     @sm.states.should.eql? [:locked,:off]
-    
+
   end
 
-   it "should support direct transitions into an atomic state of a parallel state set" do
+  it "should support direct transitions into an atomic state of a parallel state set" do
     @sm = Statemachine.build do
       trans :start,:go, :unlocked
       state :maintenance
@@ -162,4 +162,41 @@ describe "Nested parallel" do
     @sm.state.should eql :maintenance
     @sm.states_id.should == [:maintenance]
   end
+
+  it "should support leaving a parallel state by an event from a super state of the parallel state" do
+    pending ("superstates have problems with late defined events ")
+    @sm = Statemachine.build do
+      trans :start,:go, :unlocked
+      state :maintenance
+      superstate :test do
+        superstate :s do
+          event :m, :maintenance
+          parallel :p do
+            statemachine :s1 do
+                trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
+                trans :unlocked, :coin, :locked
+            end
+            statemachine :s2 do
+              superstate :onoff do
+                trans :on, :toggle, :off
+                trans :off, :toggle, :on
+              end
+            end
+          end
+        end
+        event :repair, :maintenance # this one does not work, event has to be defined directly after superstate definition!
+      end
+    end
+
+    @sm.go
+    @sm.state.should eql :p
+    @sm.states_id.should == [:unlocked,:on]
+    @sm.toggle
+    @sm.repair
+    @sm.state.should eql :maintenance
+    @sm.states_id.should == [:maintenance]
+  end
+
+
+
 end
