@@ -161,7 +161,9 @@ module Statemachine
         transition = s.get_state(s.state).default_transition if not transition
         return transition if transition
       end
-      super.transition_for(event)
+      return @superstate.default_transition if @superstate
+
+#      super.transition_for(event)
     end
 
     def enter(args=[])

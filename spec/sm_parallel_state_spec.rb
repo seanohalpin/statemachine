@@ -197,6 +197,11 @@ describe "Nested parallel" do
     @sm.states_id.should == [:maintenance]
   end
 
+  it "should fail for undefined events if actual state is inside a parallel state" do
+    @sm.go
+    lambda {@sm.unknown}.should raise_error
+  end
+
 
 
 end
