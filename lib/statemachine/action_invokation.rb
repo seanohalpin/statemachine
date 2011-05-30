@@ -20,13 +20,17 @@ module Statemachine
         end
         return false if result ==false
        }
-      result
+      return result
     end
 
     private
 
     def send(target,event)
-      @message_queue.send(target, event) if @message_queue
+      if @message_queue
+        @message_queue.send(target, event)
+        return true
+      end
+      return false
     end
 
     def log(message)
