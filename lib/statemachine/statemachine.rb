@@ -264,7 +264,7 @@ module Statemachine
 
     def load_history(superstate)
       100.times do
-        history = superstate.history_id ? get_state(superstate.history_id) : nil
+        history = superstate.history_id ? get_state(superstate.history_id) :  get_state(superstate.startstate_id) #nil
         raise StatemachineException.new("#{superstate} doesn't have any history yet.") if not history
         if history.concrete?
           return history

@@ -18,7 +18,7 @@ module Statemachine
           log("#{a}")
           result =invoke_string(a) if not messenger
         end
-        return false if result ==false
+        return false if result == false
        }
       return result
     end
