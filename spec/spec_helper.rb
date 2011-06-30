@@ -39,9 +39,9 @@ module ParallelStatemachine
       parallel :p do
         statemachine :s1 do
           superstate :operative do
-            trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
+            trans :locked, :coin, :unlocked, Proc.new {  @cooked = true;true}
             trans :unlocked, :coin, :locked
-            event :maintain, :maintenance, Proc.new { @out_of_order = true }
+            event :maintain, :maintenance, Proc.new { @out_of_order = true ;true}
           end
         end
         statemachine :s2 do
@@ -61,7 +61,7 @@ module ParallelStatemachine
       trans :off, :toggle, :on
       trans :on, :toggle, :off
       state :on do
-         on_entry Proc.new { @sm.toggle }
+         on_entry Proc.new { @sm.toggle;true}
       end
 
     end
