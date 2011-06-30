@@ -110,6 +110,9 @@ module Statemachine
     def process_event(event, *args)
       exceptions = []
       result = false
+      #  TODO fix needed: respond_to checks superstates lying out of the parallel state as well, in case an event is
+      # defined outside the parallel statemachine it gets processed twice!
+
       @parallel_statemachines.each_with_index do |s,i|
           if s.respond_to? event
             s.process_event(event,*args)
