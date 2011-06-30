@@ -17,7 +17,7 @@ Instead of a single action, multiple actions can be defined for a transition by 
 array.
 
   sm = Statemachine.build do |smb|
-    smb.trans :cold, :fire, :hot, [:cook, Proc.new { @tasty = true }, "@shape = 'fettucini'"]
+    smb.trans :cold, :fire, :hot, [:cook, Proc.new { @tasty = true;true }, "@shape = 'fettucini'"]
   end
 
 === Redefinition of states without loosing transitions
@@ -34,6 +34,12 @@ In this example the state :unlocked of @old_sm gets replaced by a super state.
      end
   end   
 
+=== Transitions can fail
+
+Each action that is called during a transaction has to return true for the transition to suceed.
+Otherwise the entire transition is assumed as failed and the statemachine remains in its origin
+state.
+
 === Support for GemBundler
 
 rake make_spec can be used to create a gemspec file that is required for GemBundler
@@ -45,7 +51,7 @@ http://www.multi-access.de
 	
 == License
 
-Copyright (C) 2010 Sebastian Feuerstack
+Copyright (C) 2010,2011 Sebastian Feuerstack, Jessica Colnago
 Copyright (C) 2006-2010  Micah Martin
 
 This library is free software; you can redistribute it and/or
