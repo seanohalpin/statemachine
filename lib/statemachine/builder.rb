@@ -53,13 +53,23 @@ module Statemachine
     end
   end
 
+  class ParallelBuilder
+    attr_reader :parallel_statemachine
+
+    def initialize(statemachines)
+      @parallel_statemachine = ParallelStatemachine.new statemachines
+    end
+    
+  end
+
+
   # The builder module used to declare states.
   module StateBuilding
     attr_reader :subject
   
     # Declares that the state responds to the spcified event.
-    # The +event+ paramter should be a Symbol.  
-    # The +destination_id+, which should also be a Symbol, is the id of the state 
+    # The +event+ paramter should be a Symbol.
+    # The +destination_id+, which should also be a Symbol, is the id of the state
     # that will event will transition into.
     # 
     # The 3rd +action+ paramter is optional
@@ -70,8 +80,8 @@ module Statemachine
     #     end
     #   end
     #   
-    def event(event, destination_id, action = nil)
-      @subject.add(Transition.new(@subject.id, destination_id, event, action))
+    def event(event, destination_id, action = nil, cond = true)
+      @subject.add(Transition.new(@subject.id, destination_id, event, action, cond))
     end
     
     def on_event(event, options)
@@ -111,8 +121,8 @@ module Statemachine
     #     end
     #   end
     #    
-    def default(destination_id, action = nil)
-      @subject.default_transition = Transition.new(@subject.id, destination_id, nil, action)
+    def default(destination_id, action = nil, cond = true)
+      @subject.default_transition = Transition.new(@subject.id, destination_id, nil, action, cond)
     end
   end
   
@@ -160,9 +170,9 @@ module Statemachine
     #     trans :locked, :coin, :unlocked, :unlock
     #   end
     #
-    def trans(origin_id, event, destination_id, action = nil)
+    def trans(origin_id, event, destination_id, action = nil, cond = true)
       origin = acquire_state_in(origin_id, @subject)
-      origin.add(Transition.new(origin_id, destination_id, event, action))
+      origin.add(Transition.new(origin_id, destination_id, event, action, cond))
     end
 
     def transition_from(origin_id, options)
@@ -226,18 +236,28 @@ module Statemachine
       @subject = acquire_state_in(id, superstate)
     end
   end
-  
+
+  module ParallelstateBuilding
+    attr_reader :subject
+
+    def parallel (id, &block)
+      builder = ParallelStateBuilder.new(id, @subject, @statemachine)
+      builder.instance_eval(&block)
+    end
+  end
+
   # Builder class used to define superstates. Creates by SuperstateBuilding#superstate
   class SuperstateBuilder < Builder
     include StateBuilding
     include SuperstateBuilding
+    include ParallelstateBuilding
     
     def initialize(id, superstate, statemachine)
       super statemachine
       @subject = Superstate.new(id, superstate, statemachine)
       superstate.startstate_id = id if superstate.startstate_id == nil
 
-       # small patch to support redefinition of already existing states without
+      # small patch to support redefinition of already existing states without
       # loosing the already existing transformations. Used to overwrite states
       # with superstates.
 
@@ -250,17 +270,89 @@ module Statemachine
       statemachine.add_state(@subject)
     end
   end
+
+
+
   
   # Created by Statemachine.build as the root context for building the statemachine.
   class StatemachineBuilder < Builder
     include SuperstateBuilding
-    
+    include ParallelstateBuilding
+ 
     def initialize(statemachine = Statemachine.new)
       super statemachine
       @subject = @statemachine.root
     end
     
     # Used the set the context of the statemahine within the builder.
+    # 
+    #   sm = Statemachine.build do
+    #     ...
+    #     context MyContext.new
+    #   end
+    #
+    # Statemachine.context may also be used.
+    def context(a_context)
+      @statemachine.context = a_context
+      a_context.statemachine = @statemachine if a_context.respond_to?(:statemachine=)
+    end
+
+    # Stubs the context.  This makes statemachine immediately useable, even if functionless.
+    # The stub will print all the actions called so it's nice for trial runs.
+    #
+    #   sm = Statemachine.build do
+    #     ...
+    #     stub_context :verbose => true
+    #   end
+    #
+    # Statemachine.context may also be used.
+    def stub_context(options={})
+      require 'statemachine/stub_context'
+      context StubContext.new(options)
+    end
+  end
+
+ 
+  # The builder module used to declare statemachines.
+  module StatemachineBuilding
+    attr_reader :subject
+   
+    def statemachine (id, &block)
+      builder = StatemachineBuilder.new(Statemachine.new(@subject))
+      #builder = StatemachineBuilder.new
+      builder.instance_eval(&block) if block
+      if not @subject.is_a? Parallelstate
+        # Only reset statemachine if it's the root one. Otherwise
+        # the inital states on_entry function would be called!
+        builder.statemachine.reset
+      end
+      # puts "build statemachine #{builder.statemachine.inspect}"
+      
+      @subject.add_statemachine builder.statemachine
+    end
+  end
+
+  class  ParallelStateBuilder < Builder
+    include StatemachineBuilding
+    def initialize(id, superstate, statemachine)
+      super statemachine
+      @subject = Parallelstate.new(id, superstate, statemachine)
+      superstate.startstate_id = id if superstate.startstate_id == nil
+      statemachine.add_state(@subject)
+      #puts "added #{@subject.inspect}"
+    end
+  end
+
+  # Created by Statemachine.build as the root context for building the statemachine.
+  class ParallelStatemachineBuilder < ParallelBuilder
+    include StatemachineBuilding
+    
+    def initialize
+      super []
+      #@subject = @statemachine
+    end
+    
+    # used the set the context of the statemahine within the builder.
     # 
     #   sm = Statemachine.build do
     #     ...

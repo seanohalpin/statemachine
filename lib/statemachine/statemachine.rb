@@ -18,7 +18,7 @@ module Statemachine
   #   sm.state
   #
   # This class will accept any method that corresponds to an event.  If the
-  # current state respons to the event, the appropriate transtion will be invoked.
+  # current state responds to the event, the appropriate transition will be invoked.
   # Otherwise an exception will be raised.
   class Statemachine
     include ActionInvokation
@@ -31,9 +31,11 @@ module Statemachine
     # where all actions will be invoked.  This provides a way to separate logic from
     # behavior.  The statemachine is responsible for all the logic and the context
     # is responsible for all the behavior.
-    attr_accessor :context
+    attr_reader :context
 
-    attr_reader :root #:nodoc:
+    attr_reader :root, :states
+    attr_accessor :messenger, :message_queue, :is_parallel #:nodoc:
+    attr_accessor :activation
 
     # Should not be called directly.  Instances of Statemachine::Statemachine are created
     # through the Statemachine.build method.
@@ -48,20 +50,50 @@ module Statemachine
     end
 
     # Resets the statemachine back to its starting state.
-    def reset
-      @state = get_state(@root.startstate_id)
+    def reset(startstate_id=nil)
+
+      if (startstate_id and @root.is_parallel) # called when enterin a parallel state or dierctly entering a child of a parallel state from outside the parallel state
+        @state = get_state(startstate_id)
+      else
+        @state = get_state(@root.startstate_id)
+      end
       while @state and not @state.concrete?
         @state = get_state(@state.startstate_id)
       end
       raise StatemachineException.new("The state machine doesn't know where to start. Try setting the startstate.") if @state == nil
       @state.enter
-
-      @states.values.each { |state| state.reset }
+      @states.values.each { |state|
+        state.reset if not state.is_a? Parallelstate
+      }
     end
 
-    # Return the id of the current state of the statemachine.
+    def context= c
+      @context = c
+
+      p = get_parallel
+      if p
+        p.context = c
+      end
+    end
+
+    #Return the id of the current state of the statemachine.
     def state
       return @state.id
+    end
+
+    # returns an array with the ids of the current active states of the machine.
+    def states_id(atomic = true)
+      belongs, parallel = belongs_to_parallel(@state.id)
+      if belongs
+        return parallel.states
+      else
+        return [@state.id]
+      end
+    end
+
+    # returns an array with all currently active super states
+    def abstract_states
+      @state.abstract_states
     end
 
     # You may change the state of the statemachine by using this method.  The parameter should be
@@ -76,6 +108,24 @@ module Statemachine
       end
     end
 
+    def states= values
+      if values.is_a? Array and values.length==1
+        self.state=self.get_state(values.first)
+      else
+        values.each do |v|
+          if @states.has_key? v
+            self.state=v
+          else
+            belongs,parallel = belongs_to_parallel(v)
+            if belongs
+              self.state=parallel.id
+              parallel.state=v
+            end
+          end
+        end
+      end
+    end
+
     # The key method to exercise the statemachine. Any extra arguments supplied will be passed into
     # any actions associated with the transition.
     #
@@ -85,12 +135,26 @@ module Statemachine
       event = event.to_sym
       trace "Event: #{event}"
       if @state
+        belongs, parallel = belongs_to_parallel(@state.id)
+        if belongs
+          r = parallel.process_event(event, *args)
+          return true if r
+        end
         transition = @state.transition_for(event)
         if transition
-          transition.invoke(@state, self, args)
+          cond = true
+          if transition.cond!=true and transition.cond.is_a? Proc
+            cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
+          else
+            cond = instance_eval(transition.cond) if transition.cond != true and @is_parallel == nil
+          end
+          if cond
+            transition.invoke(@state, self, args)
+          end
         else
           raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
         end
+
       else
         raise StatemachineException.new("The state machine isn't in any state while processing the '#{event}' event.")
       end
@@ -100,14 +164,36 @@ module Statemachine
       @tracer.puts message if @tracer
     end
 
+    def belongs_to_parallel(id)
+      @states.each_value do |v|
+        # It doesn't belong to parallel, it is parallel
+        return [true, v] if v.id == id and v.is_a? Parallelstate
+        return [v.has_state(id),v] if v.is_a? Parallelstate
+      end
+      return [false, nil]
+    end
+
+    def get_parallel
+      @states.each_value do |v|
+        return v if v.is_a? Parallelstate
+      end
+      return false
+    end
+
     def get_state(id) #:nodoc:
       if @states.has_key? id
         return @states[id]
+      elsif @is_parallel and @is_parallel.statemachine.get_state(id)
+        return @is_parallel.statemachine.states[id]
+      elsif p = get_parallel and s = p.get_state(id)
+        return s
       elsif(is_history_state_id?(id))
         superstate_id = base_id(id)
         superstate = @states[superstate_id]
         raise StatemachineException.new("No history exists for #{superstate} since it is not a super state.") if superstate.concrete?
         return load_history(superstate)
+      elsif @is_parallel and @is_parallel.has_state(id)
+        @is_parallel.get_state(id)
       else
         state = State.new(id, @root, self)
         @states[id] = state
@@ -117,6 +203,10 @@ module Statemachine
 
     def add_state(state) #:nodoc:
       @states[state.id] = state
+    end
+
+    def remove_state(state)
+      @states.delete(state.id)
     end
 
     def has_state(id) #:nodoc:
@@ -145,6 +235,20 @@ module Statemachine
         rescue NoMethodError
           process_event(message.to_sym, *args)
         end
+      end
+    end
+
+    def In(id)
+      # check if it is one of the actual states
+      return true if @state.id == id
+
+      # check if it is one of the superstates
+      return true if @state.has_superstate(id)
+
+      # check if it is one of the running parallel states
+      belongs, parallel = belongs_to_parallel(@state.id)
+      if belongs
+        return parallel.In(id)
       end
     end
 

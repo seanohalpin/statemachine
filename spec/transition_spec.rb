@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 describe "Transition Calculating Exits and Entries" do
 
   before(:each) do
-    @transition = Statemachine::Transition.new(nil, nil, nil, nil)
+    @transition = Statemachine::Transition.new(nil, nil, nil, nil, true)
   end
   
   it "to nil" do
@@ -17,8 +17,8 @@ describe "Transition Calculating Exits and Entries" do
   it "to itself" do
     @a = Statemachine::State.new("a", nil, nil)
     exits, entries = @transition.exits_and_entries(@a, @a)
-    exits.should == []
-    entries.should == []
+    exits.to_s.should eql([@a].to_s)
+    entries.to_s.should eql([@a].to_s)
   end
 
   it "to friend" do

@@ -42,6 +42,11 @@ module Statemachine
     def to_s
       return "'#{id}' superstate"
     end
+
+    def abstract_states
+      return [@id] if not @superstate or @superstate.is_parallel
+      ([@id] + @superstate.abstract_states).uniq
+    end
   
   end
 

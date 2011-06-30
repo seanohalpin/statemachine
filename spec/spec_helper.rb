@@ -26,22 +26,74 @@ module SwitchStatemachine
 
 end
 
+module ParallelStatemachine
+
+  def create_parallel
+
+     @cooked = "false"
+     @out_of_order = false
+
+     @sm = Statemachine.build do
+      trans :start,:go,:p
+      state :maintenance
+      parallel :p do
+        statemachine :s1 do
+          superstate :operative do
+            trans :locked, :coin, :unlocked, Proc.new {  @cooked = true;true}
+            trans :unlocked, :coin, :locked
+            event :maintain, :maintenance, Proc.new { @out_of_order = true ;true}
+          end
+        end
+        statemachine :s2 do
+          superstate :onoff do
+            trans :on, :toggle, :off
+            trans :off, :toggle, :on
+          end
+        end
+      end
+    end
+    @sm.context = self
+  end
+
+  def create_tick
+    @status = "off"
+    @sm = Statemachine.build do
+      trans :off, :toggle, :on
+      trans :on, :toggle, :off
+      state :on do
+         on_entry Proc.new { @sm.toggle;true}
+      end
+
+    end
+    @sm.context = self
+  end
+
+   def create_tome
+    @sm = Statemachine.build do
+      trans :me, :toggle, :me
+    end
+    @sm.context = self
+  end
+end
+
+
+
 module TurnstileStatemachine
 
   def create_turnstile
     @locked = true
     @alarm_status = false
     @thankyou_status = false
-    @lock = "@locked = true"
-    @unlock = "@locked = false"
-    @alarm = "@alarm_status = true"
-    @thankyou = "@thankyou_status = true"
+    @lock = "@locked = true;true"
+    @unlock = "@locked = false;true"
+    @alarm = "@alarm_status = true;true"
+    @thankyou = "@thankyou_status = true;true"
 
     @sm = Statemachine.build do
-      trans :locked, :coin, :unlocked, "@locked = false"
-      trans :unlocked, :pass, :locked, "@locked = true"
-      trans :locked, :pass, :locked, "@alarm_status = true"
-      trans :unlocked, :coin, :locked, "@thankyou_status = true"
+      trans :locked, :coin, :unlocked, "@locked = false;true"
+      trans :unlocked, :pass, :locked, "@locked = true;true"
+      trans :locked, :pass, :locked, "@alarm_status = true;true"
+      trans :unlocked, :coin, :locked, "@thankyou_status = true;true"
     end
     @sm.context = self
   end

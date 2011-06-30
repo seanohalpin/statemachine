@@ -1,5 +1,30 @@
 = Statemachine Changelog
 
+== Version 1.2.2
+
+* Transitions can fail
+
+== Version 1.2.1
+
+* Multiple actions
+
+Instead of a single action, multiple actions can be defined for a transition
+by using an array.
+
+* Redefinition of states without loosing transitions
+
+In a statemachine definition you can pass another statemachine and replace for the
+new statemachine a state with a superstate without loosing the original transitions.
+
+Each action that is called during a transaction has to return true for the transition to suceed.
+Otherwise the entire transition is assumed as failed and the statemachine remains in its origin
+state.
+
+* Support for GemBundler
+
+rake make_spec can be used to create a gemspec file that is required for GemBundler
+integration.
+
 == Version 1.1.0
 
 DotGraph

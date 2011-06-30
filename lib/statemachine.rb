@@ -19,6 +19,7 @@
 require 'statemachine/action_invokation'
 require 'statemachine/state'
 require 'statemachine/superstate'
+require 'statemachine/parallelstate'
 require 'statemachine/transition'
 require 'statemachine/statemachine'
 require 'statemachine/builder'

@@ -212,6 +212,7 @@ describe "Builder" do
       end
     end
     object = mock("context")
+    object.stub(:action) { true }
     sm.context = object
     object.should_receive(:action)
 
@@ -232,6 +233,7 @@ describe "Builder" do
       transition_from :start, :on_event => :go, :transition_to => :new_state, :and_perform => :action
     end
     object = mock("context")
+    object.stub(:action) { true }
     sm.context = object
     object.should_receive(:action)
 
