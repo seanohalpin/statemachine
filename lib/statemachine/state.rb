@@ -61,8 +61,7 @@ module Statemachine
       if (@statemachine.is_parallel)
        @statemachine.activation.call(self.id,@statemachine.is_parallel.abstract_states,@statemachine.is_parallel.statemachine.states_id) if @statemachine.activation
       else
-
-        @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
+       @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
      end
     end
 

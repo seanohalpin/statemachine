@@ -16,7 +16,7 @@ module Statemachine
           result = send(a[0],a[1])
         else
           log("#{a}")
-          result =invoke_string(a) if not messenger
+          result = invoke_string(a) if not messenger
         end
         return false if result == false
        }
@@ -43,6 +43,7 @@ module Statemachine
 
       parameters = params_for_block(method, args, message)
       method.call(*parameters)
+      return true
     end
 
     def invoke_proc(proc, args, message)
