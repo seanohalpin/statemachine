@@ -2,8 +2,8 @@ module Statemachine
 
   class State #:nodoc:
 
-    attr_reader :id, :statemachine
-    attr_accessor :entry_action, :exit_action, :superstate
+    attr_reader :statemachine
+    attr_accessor :id, :entry_action, :exit_action, :superstate
     attr_writer :default_transition
 
     def initialize(id, superstate, state_machine)
@@ -61,8 +61,7 @@ module Statemachine
       if (@statemachine.is_parallel)
        @statemachine.activation.call(self.id,@statemachine.is_parallel.abstract_states,@statemachine.is_parallel.statemachine.states_id) if @statemachine.activation
       else
-
-        @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
+       @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
      end
     end
 

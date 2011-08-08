@@ -146,7 +146,7 @@ module Statemachine
           if transition.cond!=true and transition.cond.is_a? Proc
             cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
           else
-            cond = instance_eval(transition.cond) if transition.cond != true and @is_parallel == nil
+            cond = instance_eval(transition.cond) if transition.cond != true #and @is_parallel == nil
           end
           if cond
             transition.invoke(@state, self, args)
@@ -183,17 +183,28 @@ module Statemachine
     def get_state(id) #:nodoc:
       if @states.has_key? id
         return @states[id]
-      elsif @is_parallel and @is_parallel.statemachine.get_state(id)
-        return @is_parallel.statemachine.states[id]
-      elsif p = get_parallel and s = p.get_state(id)
-        return s
       elsif(is_history_state_id?(id))
         superstate_id = base_id(id)
-        superstate = @states[superstate_id]
+        if @is_parallel
+          superstate = @is_parallel.get_state(superstate_id)
+        else
+          superstate = @states[superstate_id]
+        end
         raise StatemachineException.new("No history exists for #{superstate} since it is not a super state.") if superstate.concrete?
         return load_history(superstate)
-      elsif @is_parallel and @is_parallel.has_state(id)
-        @is_parallel.get_state(id)
+      elsif @is_parallel
+        isp = @is_parallel
+        @is_parallel = nil
+        if isp.has_state(id)
+          state = isp.get_state(id)
+        elsif state = isp.statemachine.get_state(id)
+          @is_parallel = isp
+          return @is_parallel.statemachine.states[id] if @is_parallel.statemachine.states[id]
+        end
+        @is_parallel = isp
+        return state
+      elsif p = get_parallel and s = p.get_state(id)
+        return s
       else
         state = State.new(id, @root, self)
         @states[id] = state
@@ -264,7 +275,7 @@ module Statemachine
 
     def load_history(superstate)
       100.times do
-        history = superstate.history_id ? get_state(superstate.history_id) : nil
+        history = superstate.history_id ? get_state(superstate.history_id) :  get_state(superstate.startstate_id) #nil
         raise StatemachineException.new("#{superstate} doesn't have any history yet.") if not history
         if history.concrete?
           return history

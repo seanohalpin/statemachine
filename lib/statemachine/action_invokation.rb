@@ -16,17 +16,21 @@ module Statemachine
           result = send(a[0],a[1])
         else
           log("#{a}")
-          result =invoke_string(a) if not messenger
+          result = invoke_string(a) if not messenger
         end
-        return false if result ==false
+        return false if result == false
        }
-      result
+      return result
     end
 
     private
 
     def send(target,event)
-      @message_queue.send(target, event) if @message_queue
+      if @message_queue
+        @message_queue.send(target, event)
+        return true
+      end
+      return false
     end
 
     def log(message)
@@ -39,6 +43,7 @@ module Statemachine
 
       parameters = params_for_block(method, args, message)
       method.call(*parameters)
+      return true
     end
 
     def invoke_proc(proc, args, message)

@@ -22,11 +22,14 @@ describe "History States" do
       }.should raise_error(Statemachine::StatemachineException, "No history exists for 'on' state since it is not a super state.")
   end
 
+  # This behaviour was changed
+=begin
   it "error when trying to use history that doesn't exist yet" do
     lambda {
       @sm.fiddle
       }.should raise_error(Statemachine::StatemachineException, "'operate' superstate doesn't have any history yet.")
   end
+=end
   
   it "reseting the statemachine resets history" do
     @sm.faddle

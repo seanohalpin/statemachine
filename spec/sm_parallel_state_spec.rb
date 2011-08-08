@@ -164,7 +164,7 @@ describe "Nested parallel" do
   end
 
   it "should support leaving a parallel state by an event from a super state of the parallel state" do
-    pending ("superstates have problems with late defined events ")
+    #pending ("parallel states have problems with late defined events ")
     @sm = Statemachine.build do
       trans :start,:go, :unlocked
       state :maintenance
@@ -201,7 +201,4 @@ describe "Nested parallel" do
     @sm.go
     lambda {@sm.unknown}.should raise_error
   end
-
-
-
 end

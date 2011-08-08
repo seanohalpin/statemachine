@@ -59,7 +59,6 @@ module Statemachine
     end
 
     def non_default_transition_for(event)
-      p "check parallel for #{event}"
       transition = @transitions[event]
       return transition if transition
       
@@ -159,12 +158,11 @@ module Statemachine
 
     def transition_for(event)
       @parallel_statemachines.each do |s|
-       # puts "checke parallel #{s.id} for #{event}"
         transition = s.get_state(s.state).non_default_transition_for(event)
         transition = s.get_state(s.state).default_transition if not transition
         return transition if transition
       end
-      return @superstate.default_transition if @superstate
+      return @superstate.transition_for(event) if @superstate
 
 #      super.transition_for(event)
     end
