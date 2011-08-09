@@ -23,7 +23,6 @@ module Statemachine
        if @action # changed this if statement to return if action fails
         if not origin.statemachine.invoke_action(@action, args, "transition action from #{origin} invoked by '#{@event}' event", messenger, message_queue)
           raise StatemachineException.new("Transition to state #{destination.id} failed because action for event #{@event} return false.")
-          return
         end
       end
 
