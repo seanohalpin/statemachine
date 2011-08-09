@@ -13,14 +13,19 @@ module Statemachine
         elsif a.is_a? Proc
           result = invoke_proc(a, args, message)
         elsif a.is_a? Array
-          result = send(a[0],a[1])
+          if a[0] == "log"
+            log("#{a[1]}")
+            result = invoke_string(a[1]) if not messenger
+          elsif a[0] == "send"
+            result = send(a[1],a[2])
+          elsif a[0] == 'invoke'
+            result = invoke_method(a[1],args, message)
+          end
         else
-          log("#{a}")
-          result = invoke_string(a) if not messenger
         end
         return false if result == false
        }
-      return result
+      result
     end
 
     private
@@ -42,8 +47,10 @@ module Statemachine
       raise StatemachineException.new("No method '#{symbol}' for context. " + message) if not method
 
       parameters = params_for_block(method, args, message)
-      method.call(*parameters)
-      return true
+      # method.call(*parameters)
+      #return true
+      return method.call(*parameters)
+
     end
 
     def invoke_proc(proc, args, message)
