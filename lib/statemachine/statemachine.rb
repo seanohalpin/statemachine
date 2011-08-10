@@ -143,12 +143,8 @@ module Statemachine
         transition = @state.transition_for(event)
         if transition
           cond = true
-          if transition.cond!=true and transition.cond.is_a? Proc
-            cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
-          else
-            # Still have to decide how to deal with In()
-            # cond = instance_eval(transition.cond) if transition.cond != true #and @is_parallel == nil
-            cond = invoke_method(transition.cond,[],"condition from #{@state} invoked by '#{event}' event") if transition.cond != true
+          if transition.cond!=true
+             cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
           end
           if cond
             transition.invoke(@state, self, args)

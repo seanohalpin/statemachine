@@ -22,6 +22,8 @@ module Statemachine
             result = invoke_method(a[1],args, message)
           end
         else
+          log("#{a}")
+          result = invoke_string(a) if not messenger
         end
         return false if result == false
        }
@@ -35,7 +37,7 @@ module Statemachine
         @message_queue.send(target, event)
         return true
       end
-      return false
+      false
     end
 
     def log(message)
@@ -47,15 +49,17 @@ module Statemachine
       raise StatemachineException.new("No method '#{symbol}' for context. " + message) if not method
 
       parameters = params_for_block(method, args, message)
-      # method.call(*parameters)
+      method.call(*parameters)
       #return true
-      return method.call(*parameters)
-
     end
 
     def invoke_proc(proc, args, message)
       parameters = params_for_block(proc, args, message)
-      @context.instance_exec(*parameters, &proc)
+      if @context==nil
+        instance_eval(&proc)
+      else
+        @context.instance_exec(*parameters, &proc)
+      end
     end
 
     def invoke_string(expression)
@@ -68,7 +72,7 @@ module Statemachine
 
       raise StatemachineException.new("Insufficient parameters. (#{message})") if required_params > args.length
 
-      return arity < 0 ? args : args[0...arity]
+      arity < 0 ? args : args[0...arity]
     end
 
   end
