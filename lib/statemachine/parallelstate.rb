@@ -31,14 +31,8 @@ module Statemachine
     end
 
     def activate(terminal_state = nil)
-      @statemachine.state = self
-
-      @parallel_statemachines.each_with_index do |s,i|
-        s.activation = @statemachine.activation
-        s.reset(@startstate_ids[i])
-      end
       @parallel_statemachines.each do |s|
-        next if terminal_state and s.has_state(terminal_state)
+       # next if terminal_state and s.has_state(terminal_state)
         @statemachine.activation.call(s.state,self.abstract_states,self.states) if @statemachine.activation
       end
 
@@ -58,13 +52,13 @@ module Statemachine
       end
     end
 
-    def non_default_transition_for(event)
+    def non_default_transition_for(event,check_superstates=true)
       transition = @transitions[event]
       return transition if transition
       
-      transition = transition_for(event)
+      transition = transition_for(event,check_superstates)
       
-      transition = @superstate.non_default_transition_for(event) if @superstate and not transition
+      transition = @superstate.non_default_transition_for(event) if check_superstates and @superstate and not transition
       return transition
     end
 
@@ -153,24 +147,41 @@ module Statemachine
     end
 
     def states
-      return @parallel_statemachines.map &:state
+      result =[]
+      @parallel_statemachines.each  do |s|
+        state = s.state
+        r,p = s.belongs_to_parallel(state)
+        if r
+          result += p.states
+        else
+          result << state
+        end
+      end
+      result
     end
 
-    def transition_for(event)
+    def transition_for(event,check_superstates=true)
       @parallel_statemachines.each do |s|
-        transition = s.get_state(s.state).non_default_transition_for(event)
+        transition = s.get_state(s.state).non_default_transition_for(event,false)
         transition = s.get_state(s.state).default_transition if not transition
         return transition if transition
       end
-      return @superstate.transition_for(event) if @superstate
+      return @superstate.transition_for(event,check_superstates) if (@superstate and check_superstates and @superstate!=self)
 
-#      super.transition_for(event)
+      #super.transition_for(event)
     end
 
     def enter(args=[])
      # reset
       super(args)
+        @statemachine.state = self
+
+      @parallel_statemachines.each_with_index do |s,i|
+        s.activation = @statemachine.activation
+        s.reset(@startstate_ids[i]) if not s.state
+      end
     end
+
     def to_s
       return "'#{id}' parallel"
     end

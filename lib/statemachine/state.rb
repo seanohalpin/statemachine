@@ -21,9 +21,9 @@ module Statemachine
       return @superstate ? @transitions.merge(@superstate.transitions) : @transitions
     end
 
-    def non_default_transition_for(event)
+    def non_default_transition_for(event,check_superstates = true)
       transition = @transitions[event]
-      if @superstate
+      if check_superstates and @superstate
         transition = @superstate.non_default_transition_for(event) if @superstate and @superstate.is_parallel == false and not transition
       end
       return transition
@@ -35,8 +35,8 @@ module Statemachine
       return nil
     end
 
-    def transition_for(event)
-      transition = non_default_transition_for(event)
+    def transition_for(event,check_superstate=true)
+      transition = non_default_transition_for(event,check_superstate)
       transition = default_transition if not transition
       return transition
     end
@@ -58,11 +58,11 @@ module Statemachine
 
     def activate
       @statemachine.state = self
-      if (@statemachine.is_parallel)
-       @statemachine.activation.call(self.id,@statemachine.is_parallel.abstract_states,@statemachine.is_parallel.statemachine.states_id) if @statemachine.activation
-      else
-       @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
-     end
+     # if (@statemachine.is_parallel)
+      # @statemachine.activation.call(self.id,@statemachine.is_parallel.abstract_states,@statemachine.is_parallel.statemachine.states_id) if @statemachine.activation
+      #else
+      @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
+    # end
     end
 
     def concrete?
