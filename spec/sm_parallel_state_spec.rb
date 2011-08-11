@@ -112,7 +112,7 @@ describe "Nested parallel" do
         parallel :p do
           statemachine :s1 do
             superstate :operative do
-              trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }, Proc.new{ In(:on) }
+              trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }, "In(:on)"
               trans :unlocked, :coin, :locked
               event :maintain, :maintenance, Proc.new { @out_of_order = true }
             end

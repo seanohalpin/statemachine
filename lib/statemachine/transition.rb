@@ -32,8 +32,9 @@ module Statemachine
 
       terminal_state.activate if terminal_state and not terminal_state.is_parallel
 
-entries.each { |entered_state| entered_state.enter(args) }
-            entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
+      entries.each { |entered_state| entered_state.enter(args) }
+      entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
+      statemachine.state = terminal_state if statemachine.is_parallel
 
     end
 

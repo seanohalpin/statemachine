@@ -55,15 +55,15 @@ module Statemachine
 
     def invoke_proc(proc, args, message)
       parameters = params_for_block(proc, args, message)
-      if @context==nil
-        instance_eval(&proc)
-      else
-        @context.instance_exec(*parameters, &proc)
-      end
+      @context.instance_exec(*parameters, &proc)
     end
 
     def invoke_string(expression)
-      @context.instance_eval(expression)
+      if @context==nil
+        instance_eval(expression)
+      else
+        @context.instance_eval(expression)
+      end
     end
 
     def params_for_block(block, args, message)
