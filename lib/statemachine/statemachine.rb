@@ -78,7 +78,8 @@ module Statemachine
 
     #Return the id of the current state of the statemachine.
     def state
-      return @state.id
+      return @state.id if @state
+      nil
     end
 
     # returns an array with the ids of the current active states of the machine.

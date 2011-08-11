@@ -30,11 +30,12 @@ module Statemachine
 #      origin.statemachine.invoke_action(@action, args, "transition action from #{origin} invoked by '#{@event}' event", messenger, message_queue) if @action
 
       terminal_state = entries.last
-      entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
 
       terminal_state.activate if terminal_state and not terminal_state.is_parallel
 
-      entries.each { |entered_state| entered_state.enter(args) }
+entries.each { |entered_state| entered_state.enter(args) }
+            entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
+
     end
 
     def exits_and_entries(origin, destination)

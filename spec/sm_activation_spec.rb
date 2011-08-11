@@ -87,7 +87,7 @@ describe "State Activation Callback" do
     @callback.abstract_states.last.should == [:root]
   end
 
-  it "should activate corretly on direct entry to parallel state" do
+  it "should activate correctly on direct entry to parallel state" do
     @sm = Statemachine.build do
       trans :start,:go, :unlocked
       parallel :p do
