@@ -166,7 +166,6 @@ describe "Nested parallel" do
   end
 
   it "should support leaving a parallel state by an event from a super state of the parallel state" do
-    #pending ("parallel states have problems with late defined events ")
     @sm = Statemachine.build do
       trans :start,:go, :unlocked
       state :maintenance
@@ -186,7 +185,7 @@ describe "Nested parallel" do
             end
           end
         end
-        event :repair, :maintenance # this one does not work, event has to be defined directly after superstate definition!
+        event :repair, :maintenance
       end
     end
 
