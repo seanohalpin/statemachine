@@ -256,13 +256,15 @@ module Statemachine
       super statemachine
       @subject = Superstate.new(id, superstate, statemachine)
       superstate.startstate_id = id if superstate.startstate_id == nil
-
       # small patch to support redefinition of already existing states without
       # loosing the already existing transformations. Used to overwrite states
       # with superstates.
-
+      if not statemachine.has_state(id)
+        statemachine.add_state(@subject)
+      end
       s = statemachine.get_state(id)
       if (s)
+        statemachine.remove_state(@subject)
         s.transitions.each {|k,v|
           @subject.add(v)
         }
@@ -320,6 +322,7 @@ module Statemachine
     def statemachine (id, &block)
       builder = StatemachineBuilder.new(Statemachine.new(@subject))
       #builder = StatemachineBuilder.new
+      builder.statemachine.is_parallel = @subject if @subject.is_a? Parallelstate
       builder.instance_eval(&block) if block
       if not @subject.is_a? Parallelstate
         # Only reset statemachine if it's the root one. Otherwise
