@@ -1,5 +1,9 @@
 = Statemachine Changelog
 
+== Version 1.2.3
+
+* Added Gemfile for bundler
+
 == Version 1.2.2
 
 * Transitions can fail

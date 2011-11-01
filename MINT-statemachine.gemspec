@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{MINT-statemachine}
-  s.version = "1.2.2"
+  s.version = "1.2.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Sebastian Feuerstack}]
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://www.multi-access.de}
   s.require_paths = [%q{lib}]
   s.rubygems_version = %q{1.8.5}
-  s.summary = %q{MINT-Statemachine-1.2.2 - Statemachine Library for Ruby based on statemachine from http://slagyr.github.com/statemachine http://www.multi-access.de/open-source-software/third-party-software-extensions/}
+  s.summary = %q{MINT-Statemachine-1.2.3 - Statemachine Library for Ruby based on statemachine from http://slagyr.github.com/statemachine http://www.multi-access.de/open-source-software/third-party-software-extensions/}
   s.test_files = [%q{spec/sm_turnstile_spec.rb}, %q{spec/sm_odds_n_ends_spec.rb}, %q{spec/sm_entry_exit_actions_spec.rb}, %q{spec/default_transition_spec.rb}, %q{spec/action_invokation_spec.rb}, %q{spec/sm_parallel_state_spec.rb}, %q{spec/builder_spec.rb}, %q{spec/sm_activation_spec.rb}, %q{spec/sm_super_state_spec.rb}, %q{spec/transition_spec.rb}, %q{spec/sm_simple_spec.rb}, %q{spec/sm_action_parameterization_spec.rb}, %q{spec/history_spec.rb}]
 
   if s.respond_to? :specification_version then
