@@ -205,7 +205,6 @@ describe "Nested parallel" do
 
 
 it "should support entering a nested parallel states" do
-    #pending ("parallel states have problems with late defined events ")
     @sm = Statemachine.build do
       trans :start,:go, :unlocked
       state :maintenance
@@ -237,7 +236,7 @@ it "should support entering a nested parallel states" do
             end
           end
         end
-        event :repair, :maintenance # this one does not work, event has to be defined directly after superstate definition!
+        event :repair, :maintenance
       end
     end
 

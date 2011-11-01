@@ -50,7 +50,7 @@ module Statemachine
 
       parameters = params_for_block(method, args, message)
       method.call(*parameters)
-      #return true
+      return true
     end
 
     def invoke_proc(proc, args, message)

@@ -173,12 +173,13 @@ module Statemachine
 
     def enter(args=[])
      # reset
-      super(args)
+      #super(args)
         @statemachine.state = self
 
       @parallel_statemachines.each_with_index do |s,i|
         s.activation = @statemachine.activation
         s.reset(@startstate_ids[i]) if not s.state
+        s.get_state(@startstate_ids[i]).enter(args)
       end
     end
 

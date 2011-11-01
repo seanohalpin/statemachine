@@ -34,7 +34,7 @@ module Statemachine
 
       entries.each { |entered_state| entered_state.enter(args) }
       entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
-      statemachine.state = terminal_state if statemachine.is_parallel
+      statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
     end
 
