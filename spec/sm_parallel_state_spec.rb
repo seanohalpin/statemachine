@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/spec_helper'
 require "noodle"
 
-describe "Nested parallel" do
+describe "Parallel states" do
   before(:each) do
     @out_out_order = false
     @locked = true
@@ -202,10 +202,11 @@ describe "Nested parallel" do
     @sm.go
     lambda {@sm.unknown}.should raise_error
   end
+end
 
-
-it "should support entering a nested parallel states" do
-    @sm = Statemachine.build do
+describe "Nested arallel states" do
+  before (:each) do
+     @sm = Statemachine.build do
       trans :start,:go, :unlocked
       state :maintenance
       superstate :test do
@@ -239,7 +240,9 @@ it "should support entering a nested parallel states" do
         event :repair, :maintenance
       end
     end
+  end
 
+  it "should support entering a nested parallel states" do
     @sm.go
     @sm.state.should eql :p
     @sm.states_id.should == [:unlocked,:on,:on2]
@@ -249,6 +252,5 @@ it "should support entering a nested parallel states" do
     @sm.state.should eql :maintenance
     @sm.states_id.should == [:maintenance]
   end
-
 
 end

@@ -149,6 +149,8 @@ module Statemachine
           end
           if cond
             transition.invoke(@state, self, args)
+          else
+            p "Condition failed"
           end
         else
           raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
@@ -164,10 +166,15 @@ module Statemachine
     end
 
     def belongs_to_parallel(id)
+      parallel_state = false
       @states.each_value do |v|
+        parallel_state = v.is_a? Parallelstate
         # It doesn't belong to parallel, it is parallel
-        return [true, v] if v.id == id and v.is_a? Parallelstate
-        return [v.has_state(id),v] if v.is_a? Parallelstate
+        if parallel_state
+          if v.id == id or v.has_state(id)
+            return [true, v]
+          end
+        end
       end
       return [false, nil]
     end
@@ -256,6 +263,16 @@ module Statemachine
       return true if @state.has_superstate(id)
 
       # check if it is one of the running parallel states
+      # when inside one of them
+      if @is_parallel
+        @is_parallel.states.each do |s|
+          return true if s == id
+          return true if get_state(s).has_superstate(id)
+        end
+      end
+
+      # check if it is one of the running parallel states
+      # when not inside one of them
       belongs, parallel = belongs_to_parallel(@state.id)
       if belongs
         return parallel.In(id)

@@ -150,6 +150,7 @@ module Statemachine
       result =[]
       @parallel_statemachines.each  do |s|
         state = s.state
+
         r,p = s.belongs_to_parallel(state)
         if r
           result += p.states
@@ -198,9 +199,16 @@ module Statemachine
       end
       abstract_states.uniq
     end
+
     def is_parallel
       true
     end
+
+    def belongs_to_parallel(id)
+      return [true,self] if has_state(id)
+      return [false, nil]
+    end
+
   end
 
 end
