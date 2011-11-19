@@ -218,7 +218,7 @@ describe "Nested arallel states" do
                 trans :unlocked, :coin, :locked
             end
             statemachine :s2 do
-              #superstate :r2 do
+              superstate :r2 do
                 parallel :p2 do
                   statemachine :s21 do
                     superstate :onoff do
@@ -233,7 +233,7 @@ describe "Nested arallel states" do
                       end
                   end
                 end
-              #end
+              end
             end
           end
         end

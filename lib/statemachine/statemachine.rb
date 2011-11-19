@@ -201,11 +201,12 @@ module Statemachine
       elsif @is_parallel
         isp = @is_parallel
         @is_parallel = nil
-        if isp.has_state(id)
-          state = isp.get_state(id)
+        stm,has = isp.has_state(id)
+        if has
+          state = stm.get_state(id)
         elsif state = isp.statemachine.get_state(id)
           @is_parallel = isp
-          return @is_parallel.statemachine.states[id] if @is_parallel.statemachine.states[id]
+          return state
         end
         @is_parallel = isp
         return state
@@ -256,27 +257,16 @@ module Statemachine
     end
 
     def In(id)
-      # check if it is one of the actual states
-      return true if @state.id == id
-
-      # check if it is one of the superstates
-      return true if @state.has_superstate(id)
-
-      # check if it is one of the running parallel states
-      # when inside one of them
-      if @is_parallel
-        @is_parallel.states.each do |s|
-          return true if s == id
-          return true if get_state(s).has_superstate(id)
-        end
+      if @root.is_a? Parallelstate
+        return @root.statemachine.In(id)
       end
 
-      # check if it is one of the running parallel states
-      # when not inside one of them
-      belongs, parallel = belongs_to_parallel(@state.id)
-      if belongs
-        return parallel.In(id)
+      states_id.each do |s|
+        return true if s == id
+        return true if get_state(s).has_superstate(id)
       end
+
+      return false
     end
 
     private

@@ -62,13 +62,6 @@ module Statemachine
       return transition
     end
 
-    def In(id)
-      @parallel_statemachines.each do |s|
-        return true if s.In(id.to_sym)
-      end
-      return false
-    end
-
     def state= id
      @parallel_statemachines.each do |s|
         if s.has_state(id)
@@ -82,16 +75,13 @@ module Statemachine
     def has_state(id)
       @parallel_statemachines.each do |s|
         if s.has_state(id)
-          return true
+          return [s,true]
         end
       end
       return false
     end
 
     def get_state(id)
-#      if state = @statemachine.get_state(id)
-#        return state
-#      end
       @parallel_statemachines.each do |s|
         if state = s.get_state(id)
           return state
@@ -173,9 +163,9 @@ module Statemachine
     end
 
     def enter(args=[])
-     # reset
+      # reset
       #super(args)
-        @statemachine.state = self
+      @statemachine.state = self
 
       @parallel_statemachines.each_with_index do |s,i|
         s.activation = @statemachine.activation
@@ -202,11 +192,6 @@ module Statemachine
 
     def is_parallel
       true
-    end
-
-    def belongs_to_parallel(id)
-      return [true,self] if has_state(id)
-      return [false, nil]
     end
 
   end
