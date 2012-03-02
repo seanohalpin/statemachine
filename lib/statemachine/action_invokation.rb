@@ -22,13 +22,28 @@ module Statemachine
             result = invoke_method(a[1],args, message)
           elsif a[0] == "if"
             result = invoke_string(a[1])
-            invoke_action(a[2], [], message, messenger, message_queue) if result
-          elsif a[0] == "elseif" and not result
+            if result
+              result = invoke_action(a[2], [], message, messenger, message_queue)
+              return result
+            else
+              result = true
+            end
+          elsif a[0] == "elseif"
             result = invoke_string(a[1])
-            invoke_action(a[2], [], message, messenger, message_queue) if result
-          elsif a[0] == "else" and not result
+            if result
+              result = invoke_action(a[2], [], message, messenger, message_queue)
+              return result
+            else
+              result = true
+            end
+          elsif a[0] == "else"
             result = a[1]
-            invoke_action(a[2], [], message, messenger, message_queue)
+            if result
+              result = invoke_action(a[2], [], message, messenger, message_queue)
+              return result
+            else
+              result = true
+            end
           end
         else
           log("#{a}")
