@@ -145,12 +145,10 @@ module Statemachine
         if transition
           cond = true
           if transition.cond!=true
-             cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
+            cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
           end
           if cond
             transition.invoke(@state, self, args)
-          else
-            p "Condition failed"
           end
         else
           raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
@@ -166,15 +164,10 @@ module Statemachine
     end
 
     def belongs_to_parallel(id)
-      parallel_state = false
       @states.each_value do |v|
-        parallel_state = v.is_a? Parallelstate
         # It doesn't belong to parallel, it is parallel
-        if parallel_state
-          if v.id == id or v.has_state(id)
-            return [true, v]
-          end
-        end
+        return [true, v] if v.id == id and v.is_a? Parallelstate
+        return [v.has_state(id),v] if v.is_a? Parallelstate
       end
       return [false, nil]
     end
@@ -201,12 +194,11 @@ module Statemachine
       elsif @is_parallel
         isp = @is_parallel
         @is_parallel = nil
-        stm,has = isp.has_state(id)
-        if has
-          state = stm.get_state(id)
+        if isp.has_state(id)
+          state = isp.get_state(id)
         elsif state = isp.statemachine.get_state(id)
           @is_parallel = isp
-          return state
+          return @is_parallel.statemachine.states[id] if @is_parallel.statemachine.states[id]
         end
         @is_parallel = isp
         return state
@@ -257,16 +249,17 @@ module Statemachine
     end
 
     def In(id)
-      if @root.is_a? Parallelstate
-        return @root.statemachine.In(id)
-      end
+      # check if it is one of the actual states
+      return true if @state.id == id
 
-      states_id.each do |s|
-        return true if s == id
-        return true if get_state(s).has_superstate(id)
-      end
+      # check if it is one of the superstates
+      return true if @state.has_superstate(id)
 
-      return false
+      # check if it is one of the running parallel states
+      belongs, parallel = belongs_to_parallel(@state.id)
+      if belongs
+        return parallel.In(id)
+      end
     end
 
     private

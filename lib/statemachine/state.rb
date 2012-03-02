@@ -58,11 +58,11 @@ module Statemachine
 
     def activate
       @statemachine.state = self
-     # if (@statemachine.is_parallel)
+      # if (@statemachine.is_parallel)
       # @statemachine.activation.call(self.id,@statemachine.is_parallel.abstract_states,@statemachine.is_parallel.statemachine.states_id) if @statemachine.activation
       #else
       @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
-    # end
+      # end
     end
 
     def concrete?
@@ -83,7 +83,7 @@ module Statemachine
 
     def has_superstate(id)
       return false if not @superstate
-      return true if @superstate.id == id 
+      return true if @superstate.id == id
       return @superstate.has_superstate(id)
     end
 
@@ -97,5 +97,5 @@ module Statemachine
       false
     end
   end
-  
+
 end
