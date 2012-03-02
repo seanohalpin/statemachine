@@ -20,6 +20,15 @@ module Statemachine
             result = send(a[1],a[2])
           elsif a[0] == 'invoke'
             result = invoke_method(a[1],args, message)
+          elsif a[0] == "if"
+            result = invoke_string(a[1])
+            invoke_action(a[2], [], message, messenger, message_queue) if result
+          elsif a[0] == "elseif" and not result
+            result = invoke_string(a[1])
+            invoke_action(a[2], [], message, messenger, message_queue) if result
+          elsif a[0] == "else" and not result
+            result = a[1]
+            invoke_action(a[2], [], message, messenger, message_queue)
           end
         else
           log("#{a}")
