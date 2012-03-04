@@ -36,6 +36,7 @@ describe "Parallel states" do
   it "supports entering a parallel state" do
     @sm.state.should eql :start
     @sm.go
+    @sm.abstract_states.should ==[:root,:p,  :operative, :onoff ]
     @sm.state.should eql :p
     @sm.states_id.should == [:locked,:on]
     @sm.coin

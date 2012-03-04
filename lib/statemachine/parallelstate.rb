@@ -184,8 +184,11 @@ module Statemachine
       if (@superstate)
         abstract_states=@superstate.abstract_states
       end
+
+      abstract_states += [@id]
+
       @parallel_statemachines.each do |s|
-        abstract_states += s.abstract_states
+        abstract_states += s.abstract_states + []
       end
       abstract_states.uniq
     end
