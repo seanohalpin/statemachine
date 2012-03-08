@@ -11,10 +11,15 @@ module Statemachine
       @superstate = superstate
       @statemachine = state_machine
       @transitions = {}
+      @spontaneous_transitions = []
     end
 
     def add(transition)
-      @transitions[transition.event] = transition
+      if transition.event == nil
+        @spontaneous_transitions.push(transition)
+      else
+        @transitions[transition.event] = transition
+      end
     end
 
     def transitions
@@ -32,6 +37,16 @@ module Statemachine
     def default_transition
       return @default_transition if @default_transition
       return @superstate.default_transition if @superstate
+      return nil
+    end
+
+    def spontaneous_transition
+      @spontaneous_transitions.each do |s|
+         return s if s.cond == true
+         if s.cond
+          return s if @statemachine.invoke_action(s.cond, [], "condition from #{@state} invoked by '#{nil}' event", nil, nil)
+         end
+      end
       return nil
     end
 
@@ -54,6 +69,8 @@ module Statemachine
       message_queue = self.statemachine.message_queue
       @statemachine.trace("\tentering #{self}")
       @statemachine.invoke_action(@entry_action, args, "entry action for #{self}", messenger, message_queue) if @entry_action
+      transition = spontaneous_transition
+      transition.invoke(self, @statemachine, []) if transition
     end
 
     def activate
