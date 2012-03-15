@@ -36,6 +36,9 @@ module Statemachine
       entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
       statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
+      # Take any valid spontaneous transitions
+      transition = destination.spontaneous_transition
+      transition.invoke(destination, statemachine, args) if transition
     end
 
     def exits_and_entries(origin, destination)

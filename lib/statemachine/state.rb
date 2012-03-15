@@ -69,8 +69,6 @@ module Statemachine
       message_queue = self.statemachine.message_queue
       @statemachine.trace("\tentering #{self}")
       @statemachine.invoke_action(@entry_action, args, "entry action for #{self}", messenger, message_queue) if @entry_action
-      transition = spontaneous_transition
-      transition.invoke(self, @statemachine, []) if transition
     end
 
     def activate

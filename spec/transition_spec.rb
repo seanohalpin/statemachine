@@ -111,7 +111,8 @@ describe "Transitions without events" do
     @log = ""
     @sm = Statemachine.build do
       state :off do
-        on_entry Proc.new {puts "inside off"}
+        on_entry Proc.new {puts "entering off"}
+        on_exit Proc.new {puts "exiting off"}
         event :toggle, :on, Proc.new { @log += "on" }
         event nil, :done, nil, Proc.new {@log == "onoff"}
       end
