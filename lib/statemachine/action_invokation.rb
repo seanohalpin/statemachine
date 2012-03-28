@@ -86,7 +86,7 @@ module Statemachine
     end
 
     def invoke_string(expression)
-      if @context==nil or expression[0..2]=="In("
+      if @context==nil
         instance_eval(expression)
       else
         @context.instance_eval(expression)
