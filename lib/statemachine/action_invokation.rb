@@ -20,6 +20,33 @@ module Statemachine
             result = send(a[1],a[2])
           elsif a[0] == 'invoke'
             result = invoke_method(a[1],args, message)
+          elsif a[0] == 'script'
+            result = invoke_string(a[1])
+            result = true if result == nil
+          elsif a[0] == "if"
+            result = invoke_string(a[1])
+            if result
+              result = invoke_action(a[2], [], message, messenger, message_queue)
+              return result
+            else
+              result = true
+            end
+          elsif a[0] == "elseif"
+            result = invoke_string(a[1])
+            if result
+              result = invoke_action(a[2], [], message, messenger, message_queue)
+              return result
+            else
+              result = true
+            end
+          elsif a[0] == "else"
+            result = a[1]
+            if result
+              result = invoke_action(a[2], [], message, messenger, message_queue)
+              return result
+            else
+              result = true
+            end
           end
         else
           log("#{a}")
@@ -59,7 +86,7 @@ module Statemachine
     end
 
     def invoke_string(expression)
-      if @context==nil or expression[0..2]=="In("
+      if @context==nil
         instance_eval(expression)
       else
         @context.instance_eval(expression)

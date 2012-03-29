@@ -103,5 +103,29 @@ describe "Transition Calculating Exits and Entries" do
     exits.to_s.should eql([@d].to_s)
     entries.to_s.should eql([@b, @a].to_s)
   end
-  
+
 end
+
+describe "Transitions without events" do
+  before(:each) do
+    @log = ""
+    @sm = Statemachine.build do
+      state :off do
+        on_entry Proc.new {puts "entering off"}
+        on_exit Proc.new {puts "exiting off"}
+        event :toggle, :on, Proc.new { @log += "on" }
+        event nil, :done, nil, Proc.new {@log == "onoff"}
+      end
+      trans :on, :toggle, :off, Proc.new { @log += "off" }
+    end
+    @sm.context = self
+  end
+
+  it "should be done" do
+     @sm.toggle
+     @sm.state.should == :on
+     @sm.toggle
+     @sm.state.should == :done
+  end
+end
+

@@ -11,10 +11,15 @@ module Statemachine
       @superstate = superstate
       @statemachine = state_machine
       @transitions = {}
+      @spontaneous_transitions = []
     end
 
     def add(transition)
-      @transitions[transition.event] = transition
+      if transition.event == nil
+        @spontaneous_transitions.push(transition)
+      else
+        @transitions[transition.event] = transition
+      end
     end
 
     def transitions
@@ -32,6 +37,16 @@ module Statemachine
     def default_transition
       return @default_transition if @default_transition
       return @superstate.default_transition if @superstate
+      return nil
+    end
+
+    def spontaneous_transition
+      @spontaneous_transitions.each do |s|
+         return s if s.cond == true
+         if s.cond
+          return s if @statemachine.invoke_action(s.cond, [], "condition from #{@state} invoked by '#{nil}' event", nil, nil)
+         end
+      end
       return nil
     end
 
@@ -58,11 +73,11 @@ module Statemachine
 
     def activate
       @statemachine.state = self
-     # if (@statemachine.is_parallel)
+      # if (@statemachine.is_parallel)
       # @statemachine.activation.call(self.id,@statemachine.is_parallel.abstract_states,@statemachine.is_parallel.statemachine.states_id) if @statemachine.activation
       #else
       @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
-    # end
+      # end
     end
 
     def concrete?
@@ -83,7 +98,7 @@ module Statemachine
 
     def has_superstate(id)
       return false if not @superstate
-      return true if @superstate.id == id 
+      return true if @superstate.id == id
       return @superstate.has_superstate(id)
     end
 
@@ -97,5 +112,5 @@ module Statemachine
       false
     end
   end
-  
+
 end

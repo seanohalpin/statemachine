@@ -1,7 +1,7 @@
 module Statemachine
 
-  class Parallelstate< Superstate 
-  
+  class Parallelstate< Superstate
+
     attr_accessor :parallel_statemachines, :id
     attr_reader :startstate_ids
 
@@ -26,13 +26,13 @@ module Statemachine
 
     def context= c
       @parallel_statemachines.each do |s|
-         s.context=c
+        s.context=c
       end
     end
 
     def activate(terminal_state = nil)
       @parallel_statemachines.each do |s|
-       # next if terminal_state and s.has_state(terminal_state)
+        # next if terminal_state and s.has_state(terminal_state)
         @statemachine.activation.call(s.state,self.abstract_states,self.states) if @statemachine.activation
       end
 
@@ -48,40 +48,50 @@ module Statemachine
 
     def get_statemachine_with(id)
       @parallel_statemachines.each do |s|
-         return s if s.has_state(id)
+        return s if s.has_state(id)
       end
     end
 
     def non_default_transition_for(event,check_superstates=true)
       transition = @transitions[event]
       return transition if transition
-      
+
       transition = transition_for(event,check_superstates)
-      
+
       transition = @superstate.non_default_transition_for(event) if check_superstates and @superstate and not transition
       return transition
     end
 
+    def In(id)
+      @parallel_statemachines.each do |s|
+        return true if s.In(id.to_sym)
+      end
+      return false
+    end
+
     def state= id
-     @parallel_statemachines.each do |s|
+      @parallel_statemachines.each do |s|
         if s.has_state(id)
           s.state=id
           return true
         end
-     end
+      end
       return false
     end
 
     def has_state(id)
       @parallel_statemachines.each do |s|
         if s.has_state(id)
-          return [s,true]
+          return true
         end
       end
       return false
     end
 
     def get_state(id)
+#      if state = @statemachine.get_state(id)
+#        return state
+#      end
       @parallel_statemachines.each do |s|
         if state = s.get_state(id)
           return state
@@ -97,13 +107,13 @@ module Statemachine
       # defined outside the parallel statemachine it gets processed twice!
 
       @parallel_statemachines.each_with_index do |s,i|
-          if s.respond_to? event
-            s.process_event(event,*args)
-            result = true
-          end
+        if s.respond_to? event
+          s.process_event(event,*args)
+          result = true
+        end
       end
       result
-     end
+    end
 
     # Resets all of the statemachines back to theirs starting state.
     def reset
@@ -127,11 +137,11 @@ module Statemachine
     def substate_exiting(substate)
       @history_id = substate.id
     end
-  
+
     def add_substates(*substate_ids)
       do_substate_adding(substate_ids)
     end
-    
+
     def default_history=(state_id)
       @history_id = @default_history_id = state_id
     end
@@ -140,7 +150,6 @@ module Statemachine
       result =[]
       @parallel_statemachines.each  do |s|
         state = s.state
-
         r,p = s.belongs_to_parallel(state)
         if r
           result += p.states
@@ -192,11 +201,9 @@ module Statemachine
       end
       abstract_states.uniq
     end
-
     def is_parallel
       true
     end
-
   end
 
 end
