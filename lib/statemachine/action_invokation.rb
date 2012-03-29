@@ -67,12 +67,16 @@ module Statemachine
     end
 
     def params_for_block(block, args, message)
-      arity = block.arity
-      required_params = arity < 0 ? arity.abs - 1 : arity
+
+      required_params = block.parameters.select {|x|  x[0].eql? :req}.length
+
+      #arity = block.arity
+      #required_params = arity < 0 ? arity.abs - 1 : arity
 
       raise StatemachineException.new("Insufficient parameters. (#{message})") if required_params > args.length
 
-      arity < 0 ? args : args[0...arity]
+      #arity < 0 ? args : args[0...arity]
+      args
     end
 
   end
