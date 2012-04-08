@@ -53,7 +53,7 @@ module Statemachine
           result = invoke_string(a) if not messenger
         end
         return false if result == false
-       }
+      }
       result
     end
 
@@ -93,17 +93,33 @@ module Statemachine
       end
     end
 
+    #def params_for_block(block, args, message)
+    #      arity = block.arity
+    #      required_params = arity < 0 ? arity.abs - 1 : arity
+    #
+    #      raise StatemachineException.new("Insufficient parameters. (#{message})") if required_params > args.length
+    #
+    #      arity < 0 ? args : args[0...arity]
+    #end
+
+    # extended parameter handling that allows to define procs with variable parameter size and also
+    # supports cutting the arguments to match a fixed set of parameters
+
     def params_for_block(block, args, message)
+      i = block.parameters
 
-      required_params = block.parameters.select {|x|  x[0].eql? :req}.length
+      required_params = block.parameters.select {|x|  x[0].eql? :req or x[0].eql? :opt}.length
 
-      #arity = block.arity
-      #required_params = arity < 0 ? arity.abs - 1 : arity
+      includes_optional =  block.parameters.select {|x|  x[0].eql? :rest}.length > 0
 
       raise StatemachineException.new("Insufficient parameters. (#{message})") if required_params > args.length
 
-      #arity < 0 ? args : args[0...arity]
-      args
+      # in case we have no optional parameters but more args than parameters, vut the args to match the parameters
+      if args.length>required_params and includes_optional == false
+        args[0...required_params]
+      else
+        args
+      end
     end
 
   end
