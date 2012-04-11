@@ -1,16 +1,25 @@
 module Statemachine
 
-  class Parallelstate< Superstate
+  class Parallelstate < Superstate
 
-    attr_accessor :parallel_statemachines, :id
+    attr_accessor :parallel_statemachines, :id, :entry_action, :exit_action
     attr_reader :startstate_ids
 
     def initialize(id, superstate, statemachine)
       super(id, superstate, statemachine)
       @parallel_statemachines=[]
       @startstate_ids=[]
+      @transitions = {}
+      @spontaneous_transitions = []
     end
 
+    def add(transition)
+      if transition.event == nil
+        @spontaneous_transitions.push(transition)
+      else
+        @transitions[transition.event] = transition
+      end
+    end
 #    def startstate_id= id
 #      if @parallel_statemachines.size>0
 #        @startstate_ids[@parallel_statemachines.size-1]= id
@@ -172,14 +181,34 @@ module Statemachine
     end
 
     def enter(args=[])
-      # reset
-      #super(args)
       @statemachine.state = self
+      @statemachine.trace("\tentering #{self}")
+
+      if @entry_action != nil
+        messenger = self.statemachine.messenger
+        message_queue = self.statemachine.message_queue
+        @statemachine.invoke_action(@entry_action, args, "entry action for #{self}", messenger, message_queue)
+      end
 
       @parallel_statemachines.each_with_index do |s,i|
         s.activation = @statemachine.activation
         s.reset(@startstate_ids[i]) if not s.state
         s.get_state(@startstate_ids[i]).enter(args)
+      end
+    end
+
+    def exit(args)
+      @statemachine.trace("\texiting #{self}")
+
+      if @exit_action != nil
+        messenger = self.statemachine.messenger
+        message_queue = self.statemachine.message_queue
+        @statemachine.invoke_action(@exit_action, args, "exit action for #{self}", messenger, message_queue)
+        @superstate.substate_exiting(self) if @superstate
+      end
+
+      @parallel_statemachines.each_with_index do |s,i|
+        s.get_state(@state).exit(args)
       end
     end
 
