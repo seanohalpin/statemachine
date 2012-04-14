@@ -32,8 +32,8 @@ module Statemachine
 
     def activate(terminal_state = nil)
       @parallel_statemachines.each do |s|
-        # next if terminal_state and s.has_state(terminal_state)
-        @statemachine.activation.call(s.state,self.abstract_states,self.states) if @statemachine.activation
+         next if terminal_state and s.has_state(terminal_state)
+        @statemachine.activation.call(s.state,self.abstract_states+s.abstract_states,s.state) if @statemachine.activation
       end
 
     end

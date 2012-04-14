@@ -42,9 +42,12 @@ describe "Parallel states" do
     @sm.coin
     @sm.state.should eql :p
     @sm.states_id.should == [:unlocked,:on]
+    @sm.abstract_states.should ==[:root,:p,  :operative, :onoff ]
     @sm.toggle
     @sm.state.should eql :p
     @sm.states_id.should == [:unlocked,:off]
+    @sm.abstract_states.should ==[:root,:p,  :operative, :onoff ]
+
   end
 
   it "supports leaving a parallel state" do
@@ -53,6 +56,7 @@ describe "Parallel states" do
     @sm.states_id.should == [:locked,:on]
     @sm.maintain
     @sm.state.should == :maintenance
+    @sm.abstract_states.should ==[:root ]
 
   end
 
@@ -161,9 +165,12 @@ describe "Parallel states" do
     @sm.go
     @sm.state.should == :p
     @sm.states_id.should == [:unlocked,:on]
+    @sm.abstract_states.should ==[:s,:root,:p,  :operative, :onoff ]
     @sm.maintain
     @sm.state.should == :maintenance
     @sm.states_id.should == [:maintenance]
+    @sm.abstract_states.should ==[:root]
+
   end
 
   it "should support leaving a parallel state by an event from a super state of the parallel state" do

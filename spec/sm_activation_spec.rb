@@ -29,12 +29,20 @@ describe "State Activation Callback" do
 
     @callback = ActivationCallback.new
   end
-  
+
   it "should fire on successful state change" do
     create_switch
     @sm.activation=@callback.method(:activate)
-    @callback.called.length.should == 0
+
     @sm.toggle
+    @callback.called.length.should == 1
+  end
+
+  it "should call activation callback after rest" do
+    create_switch
+    @sm.activation=@callback.method(:activate)
+    @callback.called.length.should == 0
+    @sm.reset
     @callback.called.length.should == 1
   end
 
@@ -42,11 +50,11 @@ describe "State Activation Callback" do
     create_switch
     @sm.activation=@callback.method(:activate)
     @sm.toggle
-    @callback.state.last.should == :on
+    @callback.state.last.should == [:on]
     @callback.atomic_states.last.should == [:on]
     @callback.abstract_states.last.should == [:root]
     @sm.toggle
-    @callback.state.last.should == :off
+    @callback.state.last.should == [:off]
   end
 
   it "should deliver new active state on state change of parallel state machine" do
@@ -54,18 +62,19 @@ describe "State Activation Callback" do
 
     @sm.activation=@callback.method(:activate)
     @sm.go
-    @callback.called.length.should == 2
-    @callback.state.last.should == :on
-    @callback.abstract_states.last.should.eql? [:operative, :root, :onoff]
-    @callback.atomic_states.last.should == [:locked, :on]
+    @callback.called.length.should == 1
+    @callback.state.last.should == [:locked,:on]
+    @callback.abstract_states.last.should == [:root,:p, :operative,  :onoff]
+    @callback.atomic_states.last.should == [:locked,:on]
     @sm.toggle
-    @callback.state.last.should == :off
-    @callback.abstract_states.last.should.eql? [:onoff,:operative,:root]
-    @callback.atomic_states.last.should.eql? [:off,:locked]
+    @callback.state.last.should == [:locked,:off]
+    @callback.abstract_states.last.should == [:onoff]
+    @callback.atomic_states.last.should == [:off]
 
   end
 
   it "activation works for on_entry ticks as well" do
+    pending "throwing an event inside on entry is substituted by event-less transitions"
     create_tick
     @sm.activation=@callback.method(:activate)
     @sm.toggle
@@ -82,7 +91,7 @@ describe "State Activation Callback" do
     @sm.activation=@callback.method(:activate)
     @sm.toggle
     @callback.called.length.should == 1
-    @callback.state.last.should == :me
+    @callback.state.last.should == [:me]
     @callback.atomic_states.last.should == [:me]
     @callback.abstract_states.last.should == [:root]
   end
@@ -108,8 +117,8 @@ describe "State Activation Callback" do
 
     @sm.activation=@callback.method(:activate)
     @sm.go
-    @callback.state.should.eql? [:unlocked,:on]
-    @callback.called.length.should == 2
+    @callback.state.last.should == [:unlocked,:on]
+    @callback.called.length.should == 1
   end
 
 

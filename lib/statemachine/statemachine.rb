@@ -62,9 +62,11 @@ module Statemachine
       end
       raise StatemachineException.new("The state machine doesn't know where to start. Try setting the startstate.") if @state == nil
       @state.enter
+      @state.activate
       @states.values.each { |state|
         state.reset if not state.is_a? Parallelstate
       }
+      activation.call([@state.id],abstract_states,states_id) if activation  and  not is_parallel
     end
 
     def context= c
