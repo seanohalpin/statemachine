@@ -46,7 +46,7 @@ module Statemachine
 
     # Returns the id of the startstate of the statemachine.
     def startstate
-      return @root.startstate_id
+      @root.startstate_id
     end
 
     # Resets the statemachine back to its starting state.

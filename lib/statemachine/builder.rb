@@ -344,6 +344,23 @@ module Statemachine
       statemachine.add_state(@subject)
       #puts "added #{@subject.inspect}"
     end
+
+    def on_entry(entry_action)
+      @subject.entry_action = entry_action
+    end
+
+    def on_exit(exit_action)
+      @subject.exit_action = exit_action
+    end
+
+    def event(event, destination_id, action = nil, cond = true)
+      @subject.add(Transition.new(@subject.id, destination_id, event, action, cond))
+    end
+
+    def trans(origin_id, event, destination_id, action = nil, cond = true)
+      origin = acquire_state_in(origin_id, @subject)
+      origin.add(Transition.new(origin_id, destination_id, event, action, cond))
+    end
   end
 
   # Created by Statemachine.build as the root context for building the statemachine.
