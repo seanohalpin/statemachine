@@ -31,10 +31,10 @@ module Statemachine
       terminal_state = entries.last
 
 
-      #terminal_state.activate if terminal_state and not terminal_state.is_parallel
+      terminal_state.activate if terminal_state and not terminal_state.is_parallel
       entries.each { |entered_state| entered_state.enter(args) }
-      entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
-      statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) #and terminal_state.is_parallel
+      #entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
+      statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
       new_states=[]
       if terminal_state.is_parallel

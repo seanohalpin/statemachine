@@ -68,8 +68,8 @@ describe "State Activation Callback" do
     @callback.atomic_states.last.should == [:locked,:on]
     @sm.toggle
     @callback.state.last.should == [:locked,:off]
-    @callback.abstract_states.last.should == [:onoff]
-    @callback.atomic_states.last.should == [:off]
+    @callback.abstract_states.last.should == [:root, :p, :operative, :onoff]
+    @callback.atomic_states.last.should == [:locked,:off]
 
   end
 
