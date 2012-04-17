@@ -36,14 +36,23 @@ module Statemachine
       #entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
       statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
-      new_states=[]
-      if terminal_state.is_parallel
-        new_states = terminal_state.states
-      elsif terminal_state.statemachine.is_parallel
-        new_states = terminal_state.statemachine.is_parallel.states
-      else
-        new_states = [terminal_state.id]
+      new_states=entries.map do |e|
+        if e.is_parallel
+          [e.id,e.states]
+        else
+          e.id
+        end
       end
+
+      new_states.flatten!
+      new_states.uniq!
+      #if terminal_state.is_parallel
+      #  new_states = terminal_state.states
+      #elsif terminal_state.statemachine.is_parallel
+      #  new_states = terminal_state.statemachine.is_parallel.states
+      #else
+      #  new_states = [terminal_state.id]
+      #end
       if statemachine.activation
         if  not statemachine.is_parallel
           statemachine.activation.call(new_states,statemachine.abstract_states,statemachine.states_id) if statemachine.activation # and  not @statemachine.is_parallel
