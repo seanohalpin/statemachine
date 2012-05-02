@@ -96,7 +96,11 @@ module Statemachine
 
     # returns an array with all currently active super states
     def abstract_states
-      @state.abstract_states
+      belongs, parallel = belongs_to_parallel(@state.id)
+      if belongs
+        return parallel.abstract_states
+      end
+        return @state.abstract_states
     end
 
     # You may change the state of the statemachine by using this method.  The parameter should be
