@@ -14,6 +14,7 @@ module Statemachine
     end
 
     def invoke(origin, statemachine, args)
+      old_abstract_states = statemachine.abstract_states
       destination = statemachine.get_state(@destination_id)
       exits, entries = exits_and_entries(origin, destination)
       exits.each { |exited_state| exited_state.exit(args) }
@@ -36,26 +37,18 @@ module Statemachine
       #entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
       statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
-      new_states=entries.map do |e|
-        if e.is_parallel
-          [e.id,e.states]
-        else
-          e.id
-        end
-      end
+      new_states = statemachine.states_id
+      new_states = new_states + (statemachine.abstract_states - old_abstract_states)
 
       new_states.flatten!
       new_states.uniq!
-      #if terminal_state.is_parallel
-      #  new_states = terminal_state.states
-      #elsif terminal_state.statemachine.is_parallel
-      #  new_states = terminal_state.statemachine.is_parallel.states
-      #else
-      #  new_states = [terminal_state.id]
-      #end
+      statemachine.activation.call(new_states, statemachine.abstract_states, statemachine.states_id) if statemachine.activation
+
+
+=begin
       if statemachine.activation
         if  not statemachine.is_parallel
-          statemachine.activation.call(new_states,statemachine.abstract_states,statemachine.states_id) if statemachine.activation # and  not @statemachine.is_parallel
+          statemachine.activation.call(new_states,statemachine.abstract_states,statemachine.states_id)
         else
           # we have to figure out the root statemachine to retrieve all active abstract and atomic states!
           sm = statemachine
@@ -65,9 +58,12 @@ module Statemachine
           sm.activation.call(new_states,sm.abstract_states,sm.states_id) if sm.activation # and  not @statemachine.is_parallel
         end
       end
-# Take any valid spontaneous transitions
+=end
+    # Take any valid spontaneous transitions
       transition = destination.spontaneous_transition
-      transition.invoke(destination, statemachine, args) if transition
+      transition.each do |t|
+        t[0].invoke(t[1], statemachine, args) if t[0].is_a? Transition
+      end
     end
 
     def exits_and_entries(origin, destination)
