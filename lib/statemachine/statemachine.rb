@@ -50,7 +50,7 @@ module Statemachine
     end
 
     # Resets the statemachine back to its starting state.
-    def reset(startstate_id=nil)
+    def reset(startstate_id=nil, use_activation_callback = true)
 
       if (startstate_id and @root.is_parallel) # called when enterin a parallel state or dierctly entering a child of a parallel state from outside the parallel state
         @state = get_state(startstate_id)
@@ -62,9 +62,11 @@ module Statemachine
       end
       raise StatemachineException.new("The state machine doesn't know where to start. Try setting the startstate.") if @state == nil
       @state.enter
+      @state.activate
       @states.values.each { |state|
         state.reset if not state.is_a? Parallelstate
       }
+      activation.call([@state.id],abstract_states,states_id) if  use_activation_callback and activation  and  not is_parallel
     end
 
     def context= c
@@ -94,7 +96,11 @@ module Statemachine
 
     # returns an array with all currently active super states
     def abstract_states
-      @state.abstract_states
+      belongs, parallel = belongs_to_parallel(@state.id)
+      if belongs
+        return parallel.abstract_states
+      end
+        return @state.abstract_states
     end
 
     # You may change the state of the statemachine by using this method.  The parameter should be

@@ -41,13 +41,17 @@ module Statemachine
     end
 
     def spontaneous_transition
+      transition = []
       @spontaneous_transitions.each do |s|
-         return s if s.cond == true
-         if s.cond
-          return s if @statemachine.invoke_action(s.cond, [], "condition from #{@state} invoked by '#{nil}' event", nil, nil)
-         end
+        if s.cond == true
+          transition << [s,self]
+        else
+          if s.cond
+            transition << [s,self] if @statemachine.invoke_action(s.cond, [], "condition from #{@state} invoked by '#{nil}' event", nil, nil)
+          end
+        end
       end
-      return nil
+      return transition
     end
 
     def transition_for(event,check_superstate=true)
@@ -76,7 +80,7 @@ module Statemachine
       # if (@statemachine.is_parallel)
       # @statemachine.activation.call(self.id,@statemachine.is_parallel.abstract_states,@statemachine.is_parallel.statemachine.states_id) if @statemachine.activation
       #else
-      @statemachine.activation.call(self.id,@statemachine.abstract_states,@statemachine.states_id) if @statemachine.activation
+      #@statemachine.activation.call(self.id,self.abstract_states,@statemachine.states_id) if @statemachine.activation # and  not @statemachine.is_parallel
       # end
     end
 
@@ -103,8 +107,8 @@ module Statemachine
     end
 
     def abstract_states
-      return [] if not superstate
-      return @superstate.abstract_states if not @superstate.is_parallel
+      return [] if not @superstate
+      return @superstate.abstract_states
       []
     end
 

@@ -41,8 +41,8 @@ module Statemachine
 
     def activate(terminal_state = nil)
       @parallel_statemachines.each do |s|
-        # next if terminal_state and s.has_state(terminal_state)
-        @statemachine.activation.call(s.state,self.abstract_states,self.states) if @statemachine.activation
+         next if terminal_state and s.has_state(terminal_state)
+   #     @statemachine.activation.call(s.state,self.abstract_states+s.abstract_states,s.state) if @statemachine.activation
       end
 
     end
@@ -178,6 +178,23 @@ module Statemachine
       return @superstate.transition_for(event,check_superstates) if (@superstate and check_superstates and @superstate!=self)
 
       #super.transition_for(event)
+    end
+
+    def spontaneous_transition
+      transition = []
+      @spontaneous_transitions.each do |s|
+        if s.cond == true
+          transition << [s,self]
+        else
+          if s.cond
+            transition << [s,self] if @statemachine.invoke_action(s.cond, [], "condition from #{@state} invoked by '#{nil}' event", nil, nil)
+          end
+        end
+      end
+      @parallel_statemachines.each do |s|
+        transition << [s.get_state(s.state).spontaneous_transition, s.get_state(s.state)]
+      end
+      return transition
     end
 
     def enter(args=[])

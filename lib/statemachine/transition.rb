@@ -14,13 +14,14 @@ module Statemachine
     end
 
     def invoke(origin, statemachine, args)
+      old_abstract_states = statemachine.abstract_states
       destination = statemachine.get_state(@destination_id)
       exits, entries = exits_and_entries(origin, destination)
       exits.each { |exited_state| exited_state.exit(args) }
       messenger = origin.statemachine.messenger
       message_queue = origin.statemachine.message_queue
 
-       if @action # changed this if statement to return if action fails
+      if @action # changed this if statement to return if action fails
         if not origin.statemachine.invoke_action(@action, args, "transition action from #{origin} invoked by '#{@event}' event", messenger, message_queue)
           raise StatemachineException.new("Transition to state #{destination.id} failed because action for event #{@event} return false.")
         end
@@ -30,19 +31,43 @@ module Statemachine
 
       terminal_state = entries.last
 
-      terminal_state.activate if terminal_state and not terminal_state.is_parallel
 
+      terminal_state.activate if terminal_state and not terminal_state.is_parallel
       entries.each { |entered_state| entered_state.enter(args) }
-      entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
+      #entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
       statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
-      # Take any valid spontaneous transitions
+      new_states = statemachine.states_id
+      new_states = new_states + (statemachine.abstract_states - old_abstract_states)
+
+      new_states.flatten!
+      new_states.uniq!
+      statemachine.activation.call(new_states, statemachine.abstract_states, statemachine.states_id) if statemachine.activation
+
+
+=begin
+      if statemachine.activation
+        if  not statemachine.is_parallel
+          statemachine.activation.call(new_states,statemachine.abstract_states,statemachine.states_id)
+        else
+          # we have to figure out the root statemachine to retrieve all active abstract and atomic states!
+          sm = statemachine
+          while (sm.is_parallel)
+            sm = sm.is_parallel.statemachine
+          end
+          sm.activation.call(new_states,sm.abstract_states,sm.states_id) if sm.activation # and  not @statemachine.is_parallel
+        end
+      end
+=end
+    # Take any valid spontaneous transitions
       transition = destination.spontaneous_transition
-      transition.invoke(destination, statemachine, args) if transition
+      transition.each do |t|
+        t[0].invoke(t[1], statemachine, args) if t[0].is_a? Transition
+      end
     end
 
     def exits_and_entries(origin, destination)
-     # return [], [] if origin == destination
+      # return [], [] if origin == destination
       exits = []
       entries = exits_and_entries_helper(exits, origin, destination)
       return exits, entries.reverse
