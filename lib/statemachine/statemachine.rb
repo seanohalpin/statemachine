@@ -211,6 +211,9 @@ module Statemachine
       elsif p = get_parallel and s = p.get_state(id)
         return s
       else
+        if @root.is_a? Parallelstate
+          return false
+        end
         state = State.new(id, @root, self)
         @states[id] = state
         return state

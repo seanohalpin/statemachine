@@ -63,7 +63,7 @@ describe "State Activation Callback" do
     @sm.activation=@callback.method(:activate)
     @sm.go
     @callback.called.length.should == 1
-    @callback.new_states.last.should == [:p,:locked,:on]
+    @callback.new_states.last.should == [:p, :operative, :onoff, :locked, :on]
     @callback.abstract_states.last.should == [:root,:p, :operative,  :onoff]
     @callback.atomic_states.last.should == [:locked,:on]
     @sm.toggle
@@ -117,7 +117,7 @@ describe "State Activation Callback" do
 
     @sm.activation=@callback.method(:activate)
     @sm.go
-    @callback.new_states.last.should == [:p, :unlocked, :on, :operative]
+    @callback.new_states.last.should == [:p, :operative, :onoff, :unlocked, :on]
     @callback.called.length.should == 1
   end
 

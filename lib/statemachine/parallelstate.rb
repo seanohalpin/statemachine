@@ -180,23 +180,6 @@ module Statemachine
       #super.transition_for(event)
     end
 
-    def spontaneous_transition
-      transition = []
-      @spontaneous_transitions.each do |s|
-        if s.cond == true
-          transition << [s,self]
-        else
-          if s.cond
-            transition << [s,self] if @statemachine.invoke_action(s.cond, [], "condition from #{@state} invoked by '#{nil}' event", nil, nil)
-          end
-        end
-      end
-      @parallel_statemachines.each do |s|
-        transition << [s.get_state(s.state).spontaneous_transition, s.get_state(s.state)]
-      end
-      return transition
-    end
-
     def enter(args=[])
       @statemachine.state = self
       @statemachine.trace("\tentering #{self}")
@@ -213,6 +196,19 @@ module Statemachine
         s.get_state(@startstate_ids[i]).enter(args)
       end
     end
+
+    def spontaneous_transition
+      transition = []
+      @parallel_statemachines.each do |s|
+        t = s.get_state(s.state).spontaneous_transition
+        transition << t if t
+      end
+      if transition.empty?
+        return nil
+      end
+      return transition
+    end
+
 
     def exit(args)
       @statemachine.trace("\texiting #{self}")

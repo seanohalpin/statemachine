@@ -51,6 +51,10 @@ module Statemachine
           end
         end
       end
+
+      if transition.empty?
+        return nil
+      end
       return transition
     end
 
@@ -108,7 +112,7 @@ module Statemachine
 
     def abstract_states
       return [] if not @superstate
-      return @superstate.abstract_states
+      return @superstate.abstract_states #if not @superstate.is_parallel
       []
     end
 

@@ -182,8 +182,10 @@ describe "Parallel states" do
           event :m, :maintenance
           parallel :p do
             statemachine :s1 do
+              superstate :s11 do
                 trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
                 trans :unlocked, :coin, :locked
+              end
             end
             statemachine :s2 do
               superstate :onoff do
@@ -222,8 +224,10 @@ describe "Nested arallel states" do
           event :m, :maintenance
           parallel :p do
             statemachine :s1 do
+              superstate :s11 do
                 trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
                 trans :unlocked, :coin, :locked
+              end
             end
             statemachine :s2 do
               superstate :r2 do

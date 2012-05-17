@@ -38,31 +38,22 @@ module Statemachine
       statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
       new_states = statemachine.states_id
-      new_states = new_states + (statemachine.abstract_states - old_abstract_states)
+      new_states = (statemachine.abstract_states - old_abstract_states) + new_states
 
-      new_states.flatten!
-      new_states.uniq!
-      statemachine.activation.call(new_states, statemachine.abstract_states, statemachine.states_id) if statemachine.activation
-
-
-=begin
       if statemachine.activation
-        if  not statemachine.is_parallel
-          statemachine.activation.call(new_states,statemachine.abstract_states,statemachine.states_id)
-        else
-          # we have to figure out the root statemachine to retrieve all active abstract and atomic states!
-          sm = statemachine
-          while (sm.is_parallel)
-            sm = sm.is_parallel.statemachine
-          end
-          sm.activation.call(new_states,sm.abstract_states,sm.states_id) if sm.activation # and  not @statemachine.is_parallel
+        sm = statemachine
+        while (sm.is_parallel)
+          sm = sm.is_parallel.statemachine
         end
+        sm.activation.call(new_states,sm.abstract_states,sm.states_id) if sm.activation # and  not @statemachine.is_parallel
       end
-=end
-    # Take any valid spontaneous transitions
+
+      # Take any valid spontaneous transitions
       transition = destination.spontaneous_transition
-      transition.each do |t|
-        t[0].invoke(t[1], statemachine, args) if t[0].is_a? Transition
+      if transition.is_a? Array
+        transition.each do |t|
+          t[0].invoke(t[1], statemachine, args) if t[0].is_a? Transition
+        end
       end
     end
 
