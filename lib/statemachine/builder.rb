@@ -265,7 +265,7 @@ module Statemachine
       s = statemachine.get_state(id)
       if (s)
         statemachine.remove_state(@subject)
-        s.transitions.each {|k,v|
+        s.transitions.each {|v|
           @subject.add(v)
         }
       end

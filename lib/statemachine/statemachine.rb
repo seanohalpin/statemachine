@@ -149,12 +149,17 @@ module Statemachine
         end
         transition = @state.transition_for(event)
         if transition
-          cond = true
-          if transition.cond!=true
-            cond = @state.statemachine.invoke_action(transition.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
+          if not transition.is_a? Array
+             transition = [transition]
           end
-          if cond
-            transition.invoke(@state, self, args)
+          transition.each do |t|
+            cond = true
+            if t.cond != true
+              cond = @state.statemachine.invoke_action(t.cond, [], "condition from #{@state} invoked by '#{event}' event", nil, nil)
+            end
+            if cond
+              t.invoke(@state, self, args)
+            end
           end
         else
           raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
@@ -267,18 +272,18 @@ module Statemachine
       # check if it is one of the running parallel states
       belongs, parallel = belongs_to_parallel(@state.id)
       if belongs
-        return parallel.In(id)
+        parallel.In(id)
       end
     end
 
     private
 
     def is_history_state_id?(id)
-      return id.to_s[-2..-1] == "_H"
+      id.to_s[-2..-1] == "_H"
     end
 
     def base_id(history_id)
-      return history_id.to_s[0...-2].to_sym
+      history_id.to_s[0...-2].to_sym
     end
 
     def load_history(superstate)

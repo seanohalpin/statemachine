@@ -10,7 +10,7 @@ module Statemachine
       @id = id
       @superstate = superstate
       @statemachine = state_machine
-      @transitions = {}
+      @transitions = []
       @spontaneous_transitions = []
     end
 
@@ -18,20 +18,33 @@ module Statemachine
       if transition.event == nil
         @spontaneous_transitions.push(transition)
       else
-        @transitions[transition.event] = transition
+        @transitions.push(transition)
       end
     end
 
     def transitions
-      return @superstate ? @transitions.merge(@superstate.transitions) : @transitions
+      return @superstate ? @transitions | @superstate.transitions : @transitions
+    end
+
+    def get_transitions(event)
+      transitions = []
+      @transitions.each do |t|
+        if t.event == event
+          transitions << t
+        end
+      end
+      if transitions.empty?
+        return nil
+      end
+      transitions
     end
 
     def non_default_transition_for(event,check_superstates = true)
-      transition = @transitions[event]
+      transition = get_transitions(event)
       if check_superstates and @superstate
         transition = @superstate.non_default_transition_for(event) if @superstate and @superstate.is_parallel == false and not transition
       end
-      return transition
+      transition
     end
 
     def default_transition
@@ -61,7 +74,7 @@ module Statemachine
     def transition_for(event,check_superstate=true)
       transition = non_default_transition_for(event,check_superstate)
       transition = default_transition if not transition
-      return transition
+      transition
     end
 
     def exit(args)

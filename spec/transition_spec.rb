@@ -129,3 +129,22 @@ describe "Transitions without events" do
   end
 end
 
+describe "Transitions with same events but different conditions" do
+  before(:each) do
+    @power = true
+    @sm = Statemachine.build do
+      trans :off, :toggle, :on, nil, "@power"
+      trans :off, :toggle, :no_power, nil, "not @power"
+      trans :on, :toggle, :off
+    end
+    @sm.context = self
+  end
+
+  it "should be on" do
+    @sm.state.should == :off
+    @sm.toggle
+    @sm.state.should == :on
+
+  end
+end
+

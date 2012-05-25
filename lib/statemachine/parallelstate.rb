@@ -9,7 +9,7 @@ module Statemachine
       super(id, superstate, statemachine)
       @parallel_statemachines=[]
       @startstate_ids=[]
-      @transitions = {}
+      @transitions = []
       @spontaneous_transitions = []
     end
 
@@ -17,7 +17,7 @@ module Statemachine
       if transition.event == nil
         @spontaneous_transitions.push(transition)
       else
-        @transitions[transition.event] = transition
+        @transitions.push(transition)
       end
     end
 #    def startstate_id= id
@@ -61,14 +61,27 @@ module Statemachine
       end
     end
 
+    def get_transitions(event)
+      transitions = []
+      @transitions.each do |t|
+        if t.event == event
+          transitions << t
+        end
+      end
+      if transitions.empty?
+        return nil
+      end
+      transitions
+    end
+
     def non_default_transition_for(event,check_superstates=true)
-      transition = @transitions[event]
+      transition = get_transitions(event)
       return transition if transition
 
       transition = transition_for(event,check_superstates)
 
       transition = @superstate.non_default_transition_for(event) if check_superstates and @superstate and not transition
-      return transition
+      transition
     end
 
     def In(id)
@@ -175,7 +188,7 @@ module Statemachine
         transition = s.get_state(s.state).default_transition if not transition
         return transition if transition
       end
-      return @superstate.transition_for(event,check_superstates) if (@superstate and check_superstates and @superstate!=self)
+      @superstate.transition_for(event,check_superstates) if (@superstate and check_superstates and @superstate!=self)
 
       #super.transition_for(event)
     end
@@ -206,7 +219,7 @@ module Statemachine
       if transition.empty?
         return nil
       end
-      return transition
+      transition
     end
 
 

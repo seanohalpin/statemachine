@@ -14,10 +14,10 @@ describe "Turn Stile" do
     locked_state.transitions.length.should equal(2)
     unlocked_state.transitions.length.should equal(2)
     
-    check_transition(locked_state.transitions[:coin], :locked, :unlocked, :coin, @unlock)
-    check_transition(locked_state.transitions[:pass], :locked, :locked, :pass, @alarm)
-    check_transition(unlocked_state.transitions[:pass], :unlocked, :locked, :pass, @lock)
-    check_transition(unlocked_state.transitions[:coin], :unlocked, :locked, :coin, @thankyou)
+    check_transition(locked_state.get_transitions(:coin), :locked, :unlocked, :coin, @unlock)
+    check_transition(locked_state.get_transitions(:pass), :locked, :locked, :pass, @alarm)
+    check_transition(unlocked_state.get_transitions(:pass), :unlocked, :locked, :pass, @lock)
+    check_transition(unlocked_state.get_transitions(:coin), :unlocked, :locked, :coin, @thankyou)
   end
   
   it "start state" do

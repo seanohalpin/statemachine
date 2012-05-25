@@ -7,11 +7,13 @@ require 'statemachine'
 $IS_TEST = true
 
 def check_transition(transition, origin_id, destination_id, event, action)
-  transition.should_not equal(nil)
-  transition.event.should equal(event)
-  transition.origin_id.should equal(origin_id)
-  transition.destination_id.should equal(destination_id)
-  transition.action.should eql(action)
+  transition.each do |t|
+    t.should_not equal(nil)
+    t.event.should equal(event)
+    t.origin_id.should equal(origin_id)
+    t.destination_id.should equal(destination_id)
+    t.action.should eql(action)
+  end
 end
 
 module SwitchStatemachine

@@ -46,7 +46,7 @@ module Statemachine
           events = []
           actions = []
           @sm.states.values.each do |state|
-            state.transitions.values.each do |transition|
+            state.transitions.each do |transition|
               events << transition.event
               add_action(actions, transition.action)
             end
@@ -175,9 +175,9 @@ module Statemachine
           src << "{" << endl
           src.indent!
           add_one_liner(src, nil, "#{state_name}State", "#{@classname} statemachine", "super(statemachine)")
-          state.transitions.keys.sort.each do |event_id|
-            transition = state.transitions[event_id]
-            add_state_event_handler(transition, src)
+          trans_aux =  state.transitions
+          trans_aux.sort_by!{|t| t.event}.each do |t|
+            add_state_event_handler(t, src)
           end
           src.undent!
           src << "}" << endl

@@ -41,7 +41,7 @@ module Statemachine
           @nodes = []
           @transitions = []
           @sm.states.values.each { |state|
-            state.transitions.values.each { |transition|
+            state.transitions.each { |transition|
               @nodes << transition.origin_id
               @nodes << transition.destination_id
               @transitions << transition
@@ -72,7 +72,7 @@ module Statemachine
 
           add_graph_header(builder, state.id)
 
-          state.transitions.values.each do |transition|
+          state.transitions.each do |transition|
             add_transition(builder, transition)
           end
 
