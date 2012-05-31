@@ -107,7 +107,7 @@ describe "Transition Calculating Exits and Entries" do
 end
 
 describe "Transitions without events" do
-  before(:each) do
+  it "should be done" do
     @log = ""
     @sm = Statemachine.build do
       state :off do
@@ -119,13 +119,31 @@ describe "Transitions without events" do
       trans :on, :toggle, :off, Proc.new { @log += "off" }
     end
     @sm.context = self
-  end
 
-  it "should be done" do
      @sm.toggle
      @sm.state.should == :on
      @sm.toggle
      @sm.state.should == :done
+  end
+
+  it "should be done" do
+    @sm = Statemachine.build do
+      trans :on, :toggle, :off, ["@data = 0"]
+      state :off do
+        on_entry Proc.new {@data = @data + 1}
+        event :toggle, :off
+        event nil, :done, nil, "@data == 10"
+      end
+    end
+    @sm.context = self
+
+    for i in 1..9
+      @sm.toggle
+      @sm.state.should == :off
+      @data == i
+    end
+    @sm.toggle
+    @sm.state.should == :done
   end
 end
 
@@ -140,11 +158,15 @@ describe "Transitions with same events but different conditions" do
     @sm.context = self
   end
 
-  it "should be on" do
+  it "should be on then no_power" do
     @sm.state.should == :off
     @sm.toggle
     @sm.state.should == :on
-
+    @sm.toggle
+    @power = false
+    @sm.state.should == :off
+    @sm.toggle
+    @sm.state.should == :no_power
   end
 end
 
