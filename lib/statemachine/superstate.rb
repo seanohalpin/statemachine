@@ -47,7 +47,11 @@ module Statemachine
       return [@id] if not @superstate or @superstate.is_parallel
       ([@id] + @superstate.abstract_states).uniq
     end
-  
+
+    def spontaneous_transition
+      startstate.spontaneous_transition
+    end
+
   end
 
 end
