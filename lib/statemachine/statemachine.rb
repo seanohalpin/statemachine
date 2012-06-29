@@ -37,6 +37,15 @@ module Statemachine
     attr_accessor :messenger, :message_queue, :is_parallel #:nodoc:
     attr_accessor :activation
 
+    # workaround that activation is not automatically set for parallel state machines
+    def activation
+      if is_parallel
+        is_parallel.statemachine.activation
+      else
+        @activation
+      end
+    end
+
     # Should not be called directly.  Instances of Statemachine::Statemachine are created
     # through the Statemachine.build method.
     def initialize(root = Superstate.new(:root, nil, self))
