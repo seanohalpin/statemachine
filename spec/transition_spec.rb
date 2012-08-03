@@ -5,7 +5,7 @@ describe "Transition Calculating Exits and Entries" do
   before(:each) do
     @transition = Statemachine::Transition.new(nil, nil, nil, nil, true)
   end
-  
+
   it "to nil" do
     @a = Statemachine::State.new("a", nil, nil)
     exits, entries = @transition.exits_and_entries(@a, nil)
@@ -13,7 +13,7 @@ describe "Transition Calculating Exits and Entries" do
     entries.to_s.should eql([].to_s)
     entries.length.should equal(0)
   end
-  
+
   it "to itself" do
     @a = Statemachine::State.new("a", nil, nil)
     exits, entries = @transition.exits_and_entries(@a, @a)
@@ -55,7 +55,7 @@ describe "Transition Calculating Exits and Entries" do
     exits.to_s.should eql([@a, @b].to_s)
     entries.to_s.should eql([@d, @c].to_s)
   end
-  
+
   it "to nephew" do
     @b = Statemachine::State.new("b", nil, nil)
     @c = Statemachine::State.new("c", nil, nil)
@@ -73,7 +73,7 @@ describe "Transition Calculating Exits and Entries" do
     exits.to_s.should eql([@a].to_s)
     entries.to_s.should eql([@b].to_s)
   end
-  
+
   it "to second cousin" do
     @c = Statemachine::State.new("c", nil, nil)
     @b = Statemachine::State.new("b", @c, nil)
@@ -97,7 +97,7 @@ describe "Transition Calculating Exits and Entries" do
   it "to parent's grandchild" do
     @c = Statemachine::State.new("c", nil, nil)
     @b = Statemachine::State.new("b", @c, nil)
-    @a = Statemachine::State.new("a", @b, nil) 
+    @a = Statemachine::State.new("a", @b, nil)
     @d = Statemachine::State.new("d", @c, nil)
     exits, entries = @transition.exits_and_entries(@d, @a)
     exits.to_s.should eql([@d].to_s)
@@ -120,10 +120,10 @@ describe "Transitions without events" do
     end
     @sm.context = self
 
-     @sm.toggle
-     @sm.state.should == :on
-     @sm.toggle
-     @sm.state.should == :done
+    @sm.toggle
+    @sm.state.should == :on
+    @sm.toggle
+    @sm.state.should == :done
   end
 
   it "should be done" do
@@ -145,6 +145,37 @@ describe "Transitions without events" do
     @sm.toggle
     @sm.state.should == :done
   end
+
+  it "after entering a parallel statemachine shoud be done" do
+    def activate(new_states,abstract_states, atomic_states)
+
+           puts "activate #{new_states} #{abstract_states} #{atomic_states}"
+    end
+
+    @sm = Statemachine.build do
+      trans :start,:go,:p
+      parallel :p do
+        statemachine :s1 do
+          superstate :operative do
+            state :unlocked do
+              event nil, :locked
+            end
+            trans :locked, :coin, :unlocked
+          end
+        end
+        statemachine :s2 do
+          superstate :onoff do
+            trans :on, :toggle, :off
+            trans :off, :toggle, :on
+          end
+        end
+      end
+    end
+    @sm.activation=self.method(:activate)
+    @sm.go
+    @sm.states_id.should == [:locked,:on]
+  end
+
 end
 
 describe "Transitions with same events but different conditions" do

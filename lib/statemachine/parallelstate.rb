@@ -214,7 +214,7 @@ module Statemachine
       transition = []
       @parallel_statemachines.each do |s|
         t = s.get_state(s.state).spontaneous_transition
-        transition << t if t
+        transition << [t,s] if t # we need to store the state machine relevant for the transition
       end
       if transition.empty?
         return nil

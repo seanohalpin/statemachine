@@ -34,7 +34,7 @@ module Statemachine
 
       terminal_state.activate if terminal_state and not terminal_state.is_parallel
       entries.each { |entered_state| entered_state.enter(args) }
-      #entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
+#entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
       statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
       new_states = statemachine.states_id
@@ -50,9 +50,21 @@ module Statemachine
 
       # Take any valid spontaneous transitions
       transition = destination.spontaneous_transition
-      if transition.is_a? Array
-        transition.each do |t|
-          t[0].invoke(t[1], statemachine, args) if t[0].is_a? Transition
+
+      if transition
+        if destination.is_parallel
+          transition.each do |trans,statem|
+            trans.each do |t|
+              t[0].invoke(t[1], statem, args) if t[0].is_a? Transition
+            end
+          end
+        else
+
+          if transition.is_a? Array
+            transition.each do |t|
+              t[0].invoke(t[1], statemachine, args) if t[0].is_a? Transition
+            end
+          end
         end
       end
     end
