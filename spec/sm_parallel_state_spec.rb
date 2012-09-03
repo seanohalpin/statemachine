@@ -10,7 +10,9 @@ describe "Parallel states" do
     @sm = Statemachine.build do
       trans :start,:go,:p
       state :maintenance
+
       parallel :p do
+        event :activate_exit, :maintain
         statemachine :s1 do
           superstate :operative do
             trans :locked, :coin, :unlocked, Proc.new {  @cooked = true }
@@ -25,10 +27,28 @@ describe "Parallel states" do
           end
         end
       end
+
     end
 
     @sm.context = @noodle
   end
+
+  it "should call exit only once if exiting parallel state" do
+    counter = 0
+    @sm.get_state(:p).exit_action = Proc.new { counter += 1 }
+    @sm.go
+    @sm.activate_exit
+    counter.should == 1
+  end
+
+  it "should call enter only once if entering parallel state" do
+      counter = 0
+      @sm.get_state(:p).entry_action = Proc.new { counter += 1 }
+      @sm.go
+      counter.should == 1
+    end
+
+
 # @TODO add tests that set a certain state that is part of a parallel state machine
   # to check if
   # the other sub statemachine is set to the initial state

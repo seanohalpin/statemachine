@@ -109,7 +109,7 @@ module Statemachine
       if belongs
         return parallel.abstract_states
       end
-        return @state.abstract_states
+      return @state.abstract_states
     end
 
     # You may change the state of the statemachine by using this method.  The parameter should be
@@ -151,15 +151,11 @@ module Statemachine
       event = event.to_sym
       trace "Event: #{event}"
       if @state
-        belongs, parallel = belongs_to_parallel(@state.id)
-        if belongs
-          r = parallel.process_event(event, *args)
-          return true if r
-        end
+
         transition = @state.transition_for(event)
         if transition
           if not transition.is_a? Array
-             transition = [transition]
+            transition = [transition]
           end
           transition.each do |t|
             cond = true
@@ -171,7 +167,16 @@ module Statemachine
             end
           end
         else
+
+          belongs, parallel = belongs_to_parallel(@state.id)
+          if belongs
+            r = parallel.process_event(event, *args)
+            if r
+              return true
+            end
+          end
           raise TransitionMissingException.new("#{@state} does not respond to the '#{event}' event.")
+
         end
 
       else
@@ -256,6 +261,12 @@ module Statemachine
       return false
     end
 
+    def which_state_respond_to?(message)
+      #return super if super(message)
+      return @state if  @state and @state.transition_for(message)
+      nil
+    end
+
     def method_missing(message, *args) #:nodoc:
       if @state and @state.transition_for(message)
         process_event(message.to_sym, *args)
@@ -263,8 +274,9 @@ module Statemachine
         # params = [message.to_sym].concat(args)
         # method.call(*params)
       else
-        begin
-          super(message, args)
+        begin        return super if super(message)
+
+        super(message, args)
         rescue NoMethodError
           process_event(message.to_sym, *args)
         end

@@ -20,18 +20,6 @@ module Statemachine
         @transitions.push(transition)
       end
     end
-#    def startstate_id= id
-#      if @parallel_statemachines.size>0
-#        @startstate_ids[@parallel_statemachines.size-1]= id
-#      end
-#    end
-#
-#    def startstate_id
-#      if (@parallel_statemachines.size>0 and @parallel_statemachines.size==@startstate_ids.size)
-#        return true
-#      end
-#      nil
-#    end
 
     def context= c
       @parallel_statemachines.each do |s|
@@ -41,8 +29,8 @@ module Statemachine
 
     def activate(terminal_state = nil)
       @parallel_statemachines.each do |s|
-         next if terminal_state and s.has_state(terminal_state)
-   #     @statemachine.activation.call(s.state,self.abstract_states+s.abstract_states,s.state) if @statemachine.activation
+        next if terminal_state and s.has_state(terminal_state)
+        #     @statemachine.activation.call(s.state,self.abstract_states+s.abstract_states,s.state) if @statemachine.activation
       end
 
     end
@@ -74,16 +62,6 @@ module Statemachine
       transitions
     end
 
-    def non_default_transition_for(event,check_superstates=true)
-      transition = get_transitions(event)
-      return transition if transition
-
-      transition = transition_for(event,check_superstates)
-
-      transition = @superstate.non_default_transition_for(event) if check_superstates and @superstate and not transition
-      transition
-    end
-
     def In(id)
       @parallel_statemachines.each do |s|
         return true if s.In(id.to_sym)
@@ -111,9 +89,6 @@ module Statemachine
     end
 
     def get_state(id)
-#      if state = @statemachine.get_state(id)
-#        return state
-#      end
       @parallel_statemachines.each do |s|
         if state = s.get_state(id)
           return state
@@ -125,15 +100,22 @@ module Statemachine
     def process_event(event, *args)
       exceptions = []
       result = false
-      #  TODO fix needed: respond_to checks superstates lying out of the parallel state as well, in case an event is
-      # defined outside the parallel statemachine it gets processed twice!
 
-      @parallel_statemachines.each_with_index do |s,i|
-        if s.respond_to? event
-          s.process_event(event,*args)
-          result = true
+      # first check if the statemachine that currenlty executes the parallel state has a suitable transition
+      if (@statemachine.which_state_respond_to? event)
+        @statemachine.process_event(event,*args)
+        result = true
+      else  # otherwise check for local transitions inside parallel state
+
+        @parallel_statemachines.each_with_index do |s,i|
+          t = s.which_state_respond_to? event
+          if s.respond_to? event
+            s.process_event(event,*args)
+            result = true
+          end
         end
       end
+
       result
     end
 
@@ -183,14 +165,17 @@ module Statemachine
     end
 
     def transition_for(event,check_superstates=true)
-      @parallel_statemachines.each do |s|
-        transition = s.get_state(s.state).non_default_transition_for(event,false)
-        transition = s.get_state(s.state).default_transition if not transition
-        return transition if transition
+      transition = super(event)
+      if not transition
+        @parallel_statemachines.each do |s|
+          transition = s.get_state(s.state).non_default_transition_for(event,false)
+          transition = s.get_state(s.state).default_transition if not transition
+          return transition if transition
+        end
+        @superstate.transition_for(event,check_superstates) if (@superstate and check_superstates and @superstate!=self)
+      else
+        transition
       end
-      @superstate.transition_for(event,check_superstates) if (@superstate and check_superstates and @superstate!=self)
-
-      #super.transition_for(event)
     end
 
     def enter(args=[])

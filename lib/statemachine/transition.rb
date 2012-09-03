@@ -13,8 +13,14 @@ module Statemachine
       @cond = cond
     end
 
+    def is_self_transition?
+      @origin_id == @destination_id
+    end
+
     def invoke(origin, statemachine, args)
       old_abstract_states = statemachine.abstract_states
+      old_atomic_states =   statemachine.states_id
+
       destination = statemachine.get_state(@destination_id)
       exits, entries = exits_and_entries(origin, destination)
       exits.each { |exited_state| exited_state.exit(args) }
@@ -37,8 +43,12 @@ module Statemachine
 #entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
       statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
-      new_states = statemachine.states_id
-      new_states = (statemachine.abstract_states - old_abstract_states) + new_states
+      if is_self_transition? # handle special case of self transition
+        new_states = [@destination_id]
+      else
+        new_states = statemachine.states_id - (old_atomic_states & statemachine.states_id)
+        new_states = (statemachine.abstract_states - old_abstract_states) + new_states
+      end
 
       if statemachine.activation
         sm = statemachine
