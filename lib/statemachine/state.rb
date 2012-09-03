@@ -14,6 +14,11 @@ module Statemachine
       @spontaneous_transitions = []
     end
 
+    # TODO hack to support SCXML parser parallel state creation
+    def modify_statemachine(state_machine)
+      @statemachine = state_machine
+    end
+
     def add(transition)
       if transition.event == nil
         @spontaneous_transitions.push(transition)

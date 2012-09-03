@@ -234,7 +234,7 @@ describe "Parallel states" do
   end
 end
 
-describe "Nested arallel states" do
+describe "Nested parallel states" do
   before (:each) do
      @sm = Statemachine.build do
       trans :start,:go, :unlocked
@@ -272,6 +272,12 @@ describe "Nested arallel states" do
         event :repair, :maintenance
       end
     end
+  end
+
+  it "should point to their own state machine" do
+    @sm.go
+    @sm.state.should eql :p
+
   end
 
   it "should support entering a nested parallel states" do
