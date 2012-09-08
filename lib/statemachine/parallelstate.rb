@@ -219,7 +219,12 @@ module Statemachine
       end
 
       @parallel_statemachines.each_with_index do |s,i|
-        s.get_state(@state).exit(args)
+        as = s.get_state(s.state)
+        while as and as != self do
+         as.exit(args)
+         as = as.superstate
+         end
+
       end
     end
 
