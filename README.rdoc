@@ -51,7 +51,7 @@ http://www.multi-access.de
 	
 == License
 
-Copyright (C) 2010,2011 Sebastian Feuerstack, Jessica Colnago
+Copyright (C) 2010-2012 Sebastian Feuerstack, Jessica Colnago
 Copyright (C) 2006-2010  Micah Martin
 
 This library is free software; you can redistribute it and/or

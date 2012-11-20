@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper'
+require 'spec_helper'
 #require 'statemachine'
 #require 'lib/statemachine/action_invokation.rb'
 require "noodle"
