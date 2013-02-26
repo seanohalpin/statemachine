@@ -42,17 +42,17 @@ describe "Parallel states" do
   end
 
   it "should call enter only once if entering parallel state" do
-      counter = 0
-      @sm.get_state(:p).entry_action = Proc.new { counter += 1 }
-      @sm.go
-      counter.should == 1
-    end
+    counter = 0
+    @sm.get_state(:p).entry_action = Proc.new { counter += 1 }
+    @sm.go
+    counter.should == 1
+  end
 
 
 # @TODO add tests that set a certain state that is part of a parallel state machine
-  # to check if
-  # the other sub statemachine is set to the initial state
-  # the other sub state machines states doe not change if already in this parallel state machine
+# to check if
+# the other sub statemachine is set to the initial state
+# the other sub state machines states doe not change if already in this parallel state machine
   it "supports entering a parallel state" do
     @sm.state.should eql :start
     @sm.go
@@ -232,11 +232,66 @@ describe "Parallel states" do
     @sm.go
     lambda {@sm.unknown}.should raise_error
   end
+
+  it "should support spontaneous initial transitions" do
+
+    @sm = Statemachine.build do
+      trans :start,:go,:p
+
+      parallel :p do
+        statemachine :s1 do
+          superstate :operative do
+            trans :locked, nil, :unlocked
+            trans :unlocked, :coin, :locked
+          end
+        end
+        statemachine :s2 do
+          superstate :onoff do
+            trans :on, nil, :off
+            trans :off, :toggle, :on
+          end
+        end
+      end
+
+    end
+
+    @sm.go
+    @sm.state.should eql :p
+    @sm.states_id.should == [:unlocked,:off]
+  end
+
+  it "should support spontaneous initial transitions triggered by direct transition into a parallel atomic state" do
+
+      @sm = Statemachine.build do
+        trans :start,:go,:on
+
+        parallel :p do
+          statemachine :s1 do
+            superstate :operative do
+              trans :locked, nil, :unlocked
+              trans :unlocked, :coin, :locked
+            end
+          end
+          statemachine :s2 do
+            superstate :onoff do
+              trans :on, nil, :off
+              trans :off, :toggle, :on
+            end
+          end
+        end
+
+      end
+
+      @sm.go
+      @sm.state.should eql :p
+      @sm.states_id.should == [:unlocked,:off]
+    end
+
 end
 
 describe "Nested parallel states" do
   before (:each) do
-     @sm = Statemachine.build do
+    @sm = Statemachine.build do
       trans :start,:go, :unlocked
       state :maintenance
       superstate :test do
@@ -262,7 +317,7 @@ describe "Nested parallel states" do
                     superstate :onoff2 do
                       trans :on2, :toggle2, :off2
                       trans :off2, :toggle2, :on2
-                      end
+                    end
                   end
                 end
               end

@@ -58,26 +58,37 @@ module Statemachine
         sm.activation.call(new_states,sm.abstract_states,sm.states_id) if sm.activation # and  not @statemachine.is_parallel
       end
 
-      # Take any valid spontaneous transitions
-      transition = destination.spontaneous_transition
+      # Take any valid spontaneous transitions for entered states
+      new_states.each do |entered_state|
+        s = statemachine.get_state(entered_state)
+        transition = s.spontaneous_transition
+        perform_spontaneous_transition(statemachine,s,transition,args) if transition
+      end
 
-      if transition
-        if destination.is_parallel
-          transition.each do |trans,statem|
-            trans.each do |t|
-              t[0].invoke(t[1], statem, args) if t[0].is_a? Transition
-            end
+      # Take any valid spontaneous transitions for destination state
+      #transition = destination.spontaneous_transition
+      #perform_spontaneous_transition(statemachine,destination,transition,args) if transition
+
+
+    end
+
+    def perform_spontaneous_transition(statemachine,destination,transition,args)
+      if destination.is_parallel
+        transition.each do |trans,statem|
+          trans.each do |t|
+            t[0].invoke(t[1], statem, args) if t[0].is_a? Transition
           end
-        else
+        end
+      else
 
-          if transition.is_a? Array
-            transition.each do |t|
-              t[0].invoke(t[1], statemachine, args) if t[0].is_a? Transition
-            end
+        if transition.is_a? Array
+          transition.each do |t|
+            t[0].invoke(t[1], statemachine, args) if t[0].is_a? Transition
           end
         end
       end
     end
+
 
     def exits_and_entries(origin, destination)
       # return [], [] if origin == destination

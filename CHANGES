@@ -1,26 +1,31 @@
 = Statemachine Changelog
 
+== Version 1.3.1 (2013/02/26)
+
+* improved support for spontaneous transitions. Direct transitions to atomic states that enter a parallel state
+  consider all spontaneous transitions of all entered states.
+
 == Version 1.3.0
 
-* (Sebastian) fixed bug that prevented exit call on parallel state exit
-* (Sebastian) refactorings to support existing parallel states without calling events twice
-* (Sebastian) if entering a parallel state, spontaneous initial transitions were not executed
-* (Sebastian) introduced workaround to retrieve correct activation callback within parallel state machines
-* (Jessica) fixed bug that prevented spontaneous transitions from initial state within superstate
-* (Jessica) added test using transition to self to recheck spontaneous transition's condition.
-* (Jessica) transitions now stored as array
-* (Jessica) correct abstract states handling working. All tests working
-* (Jessica) fixed bug that prevented in parallel state machine setups the correct publishing of all new atomic and abstract states
-* (Sebastian) added option to temporarily disable activation callback for reset
-* (Sebastian) several minor bug fixes
-* (Sebastian) changed activation callback processing so it can be used fo publishing state updates with redis
-* (Jessica) Added tests for on_entry, on_exit and transitions for parallel states.
-* (Sebastian) fixed optional parameter handling
-* (Sebastian) allow dynamic parameter size
-* (Jessica) No more In() hack. Use is_in? instead
-* (Jessica) Support for spontaneous transitions
-* (Sebastian) abstract_states now also includes parallel state name
-* (Jessica) added treatment for ifs
+* fixed bug that prevented exit call on parallel state exit
+* refactorings to support existing parallel states without calling events twice
+* if entering a parallel state, spontaneous initial transitions were not executed
+* introduced workaround to retrieve correct activation callback within parallel state machines
+* fixed bug that prevented spontaneous transitions from initial state within superstate
+* added test using transition to self to recheck spontaneous transition's condition.
+* transitions now stored as array
+* correct abstract states handling working. All tests working
+* fixed bug that prevented in parallel state machine setups the correct publishing of all new atomic and abstract states
+* added option to temporarily disable activation callback for reset
+* several minor bug fixes
+* changed activation callback processing so it can be used fo publishing state updates with redis
+* Added tests for on_entry, on_exit and transitions for parallel states.
+* fixed optional parameter handling
+* allow dynamic parameter size
+* No more In() hack. Use is_in? instead
+* Support for spontaneous transitions
+* abstract_states now also includes parallel state name
+* added treatment for ifs
 
 == Version 1.2.3
 
