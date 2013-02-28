@@ -196,16 +196,8 @@ module Statemachine
     end
 
     def spontaneous_transition
-      transition = []
-      @parallel_statemachines.each do |s|
-        t = s.get_state(s.state).spontaneous_transition
-        transition << [t,s] if t # we need to store the state machine relevant for the transition
-      end
-      if transition.empty?
-        return nil
-      end
-      transition
-    end
+ 		nil
+ 	end
 
 
     def exit(args)

@@ -49,7 +49,7 @@ module Statemachine
     end
 
     def spontaneous_transition
-      startstate.spontaneous_transition
+     nil
     end
 
   end

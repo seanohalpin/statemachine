@@ -260,7 +260,16 @@ describe "Parallel states" do
     @sm.states_id.should == [:unlocked,:off]
   end
 
-  it "should support spontaneous initial transitions triggered by direct transition into a parallel atomic state" do
+  describe "state flows" do
+    before(:each) do
+      @state_flow = []
+
+      def activate(new_states,abstract_states, atomic_states)
+        @state_flow << new_states
+      end
+
+    end
+    it "should support spontaneous initial transitions triggered by direct transition into a parallel atomic state" do
 
       @sm = Statemachine.build do
         trans :start,:go,:on
@@ -279,14 +288,45 @@ describe "Parallel states" do
             end
           end
         end
-
       end
-
+      @sm.activation=self.method(:activate)
       @sm.go
       @sm.state.should eql :p
+      @state_flow.should == [[:p, :operative, :onoff, :locked, :on],[:unlocked],[:off]]
       @sm.states_id.should == [:unlocked,:off]
     end
 
+    it "should support spontaneous initial transitions triggered by direct transition into a parallel atomic state" do
+      @sm = Statemachine.build do
+        trans :start,:go,:a1
+
+        superstate :s do
+          trans :a1, nil, :a2
+          trans :a2, nil, :locked
+
+          parallel :p do
+            statemachine :s1 do
+              superstate :operative do
+                trans :locked, nil, :unlocked
+                trans :unlocked, :coin, :locked
+              end
+            end
+            statemachine :s2 do
+              superstate :onoff do
+                trans :on, nil, :off
+                trans :off, :toggle, :on
+              end
+            end
+          end
+        end
+      end
+      @sm.activation=self.method(:activate)
+      @sm.go
+      @sm.state.should eql :p
+      @state_flow.should == [[:s, :a1], [:a2],[:p, :operative, :onoff, :locked, :on],[:unlocked],[:off] ]
+      @sm.states_id.should == [:unlocked,:off]
+    end
+  end
 end
 
 describe "Nested parallel states" do
@@ -347,3 +387,4 @@ describe "Nested parallel states" do
   end
 
 end
+
