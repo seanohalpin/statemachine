@@ -40,6 +40,42 @@ Each action that is called during a transaction has to return true for the trans
 Otherwise the entire transition is assumed as failed and the statemachine remains in its origin
 state.
 
+=== Transitions can be spontaneous (eventless)
+
+In this example the statemachine will first enter the inital u1 state but then directly
+will do a transition to u2. 
+
+  @sm = Statemachine.build @old_sm do
+     superstate :unlocked do
+       trans :u1, nil , :u2
+       trans :u2, :e, :maintenance
+     end
+  end   
+
+=== Support for parallel running states
+
+After sending the :go event, the statemachine of this
+example will end up in a [:locked,:on] setting.
+
+    @sm = Statemachine.build do
+      trans :start,:go,:p
+
+      parallel :p do
+        statemachine :s1 do
+          superstate :operative do
+            trans :locked, :coin, :unlocked
+            trans :unlocked, :coin, :locked
+          end
+        end
+        statemachine :s2 do
+          superstate :onoff do
+            trans :on, :toggle, :off
+            trans :off, :toggle, :on
+          end
+        end
+      end
+    end
+
 === Support for GemBundler
 
 rake make_spec can be used to create a gemspec file that is required for GemBundler
