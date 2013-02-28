@@ -3,7 +3,7 @@ module Statemachine
     unless defined? MAJOR
       MAJOR  = 1
       MINOR  = 3
-      TINY   = 1
+      TINY   = 2
 
       STRING = [MAJOR, MINOR, TINY].join('.')
       TAG    = "REL_" + [MAJOR, MINOR, TINY].join('_')

@@ -1,5 +1,9 @@
 = Statemachine Changelog
 
+== Version 1.3.2 (2013/02/28)
+
+* Fixed bug with spontaneous transitions within parallel states.
+
 == Version 1.3.1 (2013/02/26)
 
 * improved support for spontaneous transitions. Direct transitions to atomic states that enter a parallel state
