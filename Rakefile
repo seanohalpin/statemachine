@@ -1,8 +1,8 @@
 $:.unshift('lib')
 require 'rubygems'
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 require 'rake/clean'
-require 'rake/rdoctask'
+require 'rdoc/task'
 require 'spec/rake/spectask'
 require 'statemachine'
 
@@ -24,7 +24,7 @@ Spec::Rake::SpecTask.new do |t|
 end
 
 desc 'Generate RDoc'
-rd = Rake::RDocTask.new do |rdoc|
+rd = RDoc::Task.new do |rdoc|
   rdoc.options << '--title' << 'Statemachine' << '--line-numbers' << '--inline-source' << '--main' << 'README.rdoc'
   rdoc.rdoc_files.include('README.rdoc', 'CHANGES', 'lib/**/*.rb')
 end
@@ -43,8 +43,7 @@ spec = Gem::Specification.new do |s|
   s.email = "Sebastian@Feuerstack.org"
   s.homepage = "http://www.multi-access.de"
   end
-
-Rake::GemPackageTask.new(spec) do |pkg|
+Gem::PackageTask.new(spec) do |pkg|
   pkg.need_zip = true
   pkg.need_tar = true
 end

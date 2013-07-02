@@ -43,6 +43,11 @@ module Statemachine
 #entries.each { |entered_state| entered_state.activate(terminal_state.id)  if entered_state.is_parallel }
       statemachine.state = terminal_state if statemachine.has_state(terminal_state.id) and statemachine.is_parallel
 
+      # on transition to parallel state, all  nested parallel runnign states are reseted -> no histoy TODO implement history
+      if terminal_state.is_parallel
+        terminal_state.reset
+      end
+
       if is_self_transition? # handle special case of self transition
         new_states = [@destination_id]
       else

@@ -196,8 +196,8 @@ module Statemachine
     end
 
     def spontaneous_transition
- 		nil
- 	end
+      nil
+    end
 
 
     def exit(args)
@@ -213,10 +213,17 @@ module Statemachine
       @parallel_statemachines.each_with_index do |s,i|
         as = s.get_state(s.state)
         while as and as != self do
-         as.exit(args)
-         as = as.superstate
-         end
+          as.exit(args)
+          as = as.superstate
+        end
 
+      end
+    end
+
+    # explicit reset on parallel state entry
+    def reset
+      @parallel_statemachines.each_with_index do |s,i|
+        s.reset(@startstate_ids[i])
       end
     end
 

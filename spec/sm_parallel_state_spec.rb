@@ -9,7 +9,8 @@ describe "Parallel states" do
 
     @sm = Statemachine.build do
       trans :start,:go,:p
-      state :maintenance
+     # state :maintenance
+      trans :maintenance,:go,:p
 
       parallel :p do
         event :activate_exit, :maintain
@@ -123,10 +124,14 @@ describe "Parallel states" do
     @noodle2.cooked.should equal(true)
   end
 
-  it "should support state recovery" do
-    @sm.states=[:locked,:off]
+  it "should support state recovery to initial state if without history state" do
+    @sm.states=[:locked,:on]
     @sm.toggle
-    puts @sm.abstract_states
+    @sm.states_id.should == [:locked,:off]
+    @sm.maintain
+    @sm.states_id.should == [:maintenance]
+    @sm.go
+    @sm.states_id.should == [:locked,:on]
   end
 
   it "should support parallel states inside superstates" do

@@ -1,5 +1,11 @@
 = Statemachine Changelog
 
+== Version 1.4.0 (2013/07/02)
+
+* Changed behavior: Entry into a parallel state that has been already entered before resets parallel state
+  contents to initial (no longer history by default for parallel states!).
+* fixed requires and class names since new rake version has marked rdoc and package task class as depreciated.
+
 == Version 1.3.2 (2013/02/28)
 
 * Fixed bug with spontaneous transitions within parallel states.
