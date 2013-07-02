@@ -1,5 +1,10 @@
 = Statemachine Changelog
 
+== Version 1.4.1 (2013/07/02)
+
+* bug fixed: direct entry into a parallel state child state that has been already entered has not reseted parallel state
+  contents to initial.
+
 == Version 1.4.0 (2013/07/02)
 
 * Changed behavior: Entry into a parallel state that has been already entered before resets parallel state

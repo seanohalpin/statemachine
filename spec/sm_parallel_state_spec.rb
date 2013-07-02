@@ -11,6 +11,7 @@ describe "Parallel states" do
       trans :start,:go,:p
      # state :maintenance
       trans :maintenance,:go,:p
+      trans :maintenance,:go2,:locked
 
       parallel :p do
         event :activate_exit, :maintain
@@ -124,13 +125,24 @@ describe "Parallel states" do
     @noodle2.cooked.should equal(true)
   end
 
-  it "should support state recovery to initial state if without history state" do
+  it "should support state recovery to initial states  upon entering the parallel super state  if without history state" do
     @sm.states=[:locked,:on]
     @sm.toggle
     @sm.states_id.should == [:locked,:off]
     @sm.maintain
     @sm.states_id.should == [:maintenance]
     @sm.go
+    @sm.states_id.should == [:locked,:on]
+  end
+
+
+  it "should support state recovery to initial states upon direct entering a child of the parallel super state  if without history state" do
+    @sm.states=[:locked,:on]
+    @sm.toggle
+    @sm.states_id.should == [:locked,:off]
+    @sm.maintain
+    @sm.states_id.should == [:maintenance]
+    @sm.go2
     @sm.states_id.should == [:locked,:on]
   end
 

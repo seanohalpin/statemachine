@@ -216,7 +216,7 @@ module Statemachine
           as.exit(args)
           as = as.superstate
         end
-
+        s.reset
       end
     end
 
