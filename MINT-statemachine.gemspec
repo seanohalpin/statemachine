@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = "MINT-statemachine"
-  s.version = "1.4.0"
+  s.version = "1.4.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Sebastian Feuerstack"]
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://www.multi-access.de"
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.15"
-  s.summary = "MINT-Statemachine-1.4.0 - Statemachine Library for Ruby based on statemachine from http://slagyr.github.com/statemachine http://www.multi-access.de/open-source-software/third-party-software-extensions/"
+  s.summary = "MINT-Statemachine-1.4.1 - Statemachine Library for Ruby based on statemachine from http://slagyr.github.com/statemachine http://www.multi-access.de/open-source-software/third-party-software-extensions/"
   s.test_files = ["spec/default_transition_spec.rb", "spec/sm_super_state_spec.rb", "spec/sm_action_parameterization_spec.rb", "spec/sm_entry_exit_actions_spec.rb", "spec/sm_simple_spec.rb", "spec/sm_parallel_state_spec.rb", "spec/transition_spec.rb", "spec/sm_activation_spec.rb", "spec/builder_spec.rb", "spec/action_invokation_spec.rb", "spec/sm_turnstile_spec.rb", "spec/history_spec.rb", "spec/sm_odds_n_ends_spec.rb"]
 
   if s.respond_to? :specification_version then
