@@ -22,7 +22,11 @@ module Statemachine
             result = invoke_method(a[1],args, message)
           elsif a[0] == 'script'
             result = invoke_string(a[1])
-            result = true if result == nil
+            if  result.is_a? Proc
+              result = invoke_proc(result, args, message)
+            else
+              result = true if result == nil
+            end
           elsif a[0] == "if"
             result = invoke_string(a[1])
             if result

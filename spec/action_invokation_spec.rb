@@ -36,6 +36,16 @@ describe "Action Invokation" do
     @noodle.shape.should eql("capellini")
   end
 
+  it "script actions with singe proc" do
+      sm = Statemachine.build do |smb|
+        smb.trans :cold, :fire, :hot, [["script", "Proc.new {  |r| @shape = r}"]]
+      end
+      sm.context = @noodle
+
+      sm.fire "capellini"
+      @noodle.shape.should eql("capellini")
+    end
+
   it "String actions" do
     sm = Statemachine.build do |smb|
       smb.trans :cold, :fire, :hot, "@shape = 'fettucini'; @cooked = true"

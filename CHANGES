@@ -1,5 +1,10 @@
 = Statemachine Changelog
 
+== Version 1.5.0 (2013/07/19)
+
+* Support for proc definition inside script element, which can be used with the MINT-scxml parser to define
+  scripts that contain a proc with parameters that can be set with the triggering event.
+
 == Version 1.4.1 (2013/07/02)
 
 * bug fixed: direct entry into a parallel state child state that has been already entered has not reseted parallel state

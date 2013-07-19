@@ -2,8 +2,8 @@ module Statemachine
   module VERSION #:nodoc:
     unless defined? MAJOR
       MAJOR  = 1
-      MINOR  = 4
-      TINY   = 1
+      MINOR  = 5
+      TINY   = 0
 
       STRING = [MAJOR, MINOR, TINY].join('.')
       TAG    = "REL_" + [MAJOR, MINOR, TINY].join('_')
